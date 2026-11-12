@@ -120,7 +120,7 @@ function ActivityRow({ item, accent, leadingIcon, timeRef }: {
         <div className="mt-1 flex flex-wrap items-center gap-2 text-label uppercase tracking-wider text-muted-foreground">
           {route && (
             <span className="inline-flex items-center gap-1 text-primary">
-              open {route === "/prs" ? "PR" : route === "/issues" ? "issue" : "page"} →
+              打开 {route === "/prs" ? "PR" : route === "/issues" ? "议题" : "页面"} →
             </span>
           )}
           {item.targetUrl && (
@@ -142,14 +142,14 @@ function ActivityRow({ item, accent, leadingIcon, timeRef }: {
 }
 
 function formatRelative(value: string | null | undefined): string {
-  if (!value) return "never";
+  if (!value) return "从未";
   const parsed = Date.parse(value);
-  if (!Number.isFinite(parsed)) return "never";
+  if (!Number.isFinite(parsed)) return "从未";
   const diffMs = Date.now() - parsed;
-  if (diffMs < 60_000) return `${Math.max(1, Math.round(diffMs / 1000))}s ago`;
-  if (diffMs < 3_600_000) return `${Math.round(diffMs / 60_000)}m ago`;
-  if (diffMs < 86_400_000) return `${Math.round(diffMs / 3_600_000)}h ago`;
-  return `${Math.round(diffMs / 86_400_000)}d ago`;
+  if (diffMs < 60_000) return `${Math.max(1, Math.round(diffMs / 1000))} 秒前`;
+  if (diffMs < 3_600_000) return `${Math.round(diffMs / 60_000)} 分钟前`;
+  if (diffMs < 86_400_000) return `${Math.round(diffMs / 3_600_000)} 小时前`;
+  return `${Math.round(diffMs / 86_400_000)} 天前`;
 }
 
 function scrollToId(id: string, scrollRoot?: HTMLElement | null): void {
@@ -203,8 +203,8 @@ function KpiCell({
         type="button"
         data-testid={testId}
         onClick={() => scrollToId(scrollTo, scrollRootRef?.current ?? null)}
-        title="Jump to failed activity"
-        aria-label="Jump to failed activity"
+        title="跳转到失败活动"
+        aria-label="跳转到失败活动"
         className={`${baseClass} text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
       >
         <div className="text-label font-medium uppercase tracking-wider opacity-80">{label}</div>
@@ -233,34 +233,34 @@ function RepoCard({ stats }: { stats: RepoStats }) {
           href={linkHref}
           className="font-mono text-label uppercase tracking-wider text-muted-foreground underline decoration-border underline-offset-2 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
         >
-          open →
+          打开 →
         </Link>
       )}
     >
       <div className="space-y-2 px-3 py-2.5">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 text-label uppercase tracking-wider text-muted-foreground">
-            <GitPullRequest className="h-3 w-3" /> PRs
+            <GitPullRequest className="h-3 w-3" /> PR
           </span>
-          <StatusChip tone="neutral" label={`${prCounts.total} total`} />
+          <StatusChip tone="neutral" label={`共 ${prCounts.total} 个`} />
           {prCounts.processing > 0 && (
-            <StatusChip tone="primary" pulsing label={`${prCounts.processing} processing`} />
+            <StatusChip tone="primary" pulsing label={`${prCounts.processing} 个处理中`} />
           )}
           {prCounts.error > 0 && (
-            <StatusChip tone="destructive" label={`${prCounts.error} error`} />
+            <StatusChip tone="destructive" label={`${prCounts.error} 个错误`} />
           )}
           {prCounts.done > 0 && (
-            <StatusChip tone="neutral" label={`${prCounts.done} work finished`} />
+            <StatusChip tone="neutral" label={`${prCounts.done} 个处理完成`} />
           )}
           {prCounts.watching > 0 && (
-            <StatusChip tone="neutral" label={`${prCounts.watching} watching`} />
+            <StatusChip tone="neutral" label={`${prCounts.watching} 个监控中`} />
           )}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 text-label uppercase tracking-wider text-muted-foreground">
-            <ListTodo className="h-3 w-3" /> Issues
+            <ListTodo className="h-3 w-3" /> 议题
           </span>
-          <StatusChip tone="neutral" label={`${issueCount} open`} />
+          <StatusChip tone="neutral" label={`${issueCount} 个未关闭`} />
         </div>
       </div>
     </DetailPanel>
@@ -278,14 +278,14 @@ function DashboardActivityPanel({
     <div className="flex flex-col gap-3">
       <div id="failed-activity" className="scroll-mt-4">
         <DetailPanel
-          title="Failed"
+          title="失败"
           tone={activities.failed.length > 0 ? "destructive" : "neutral"}
           testId="dashboard-activity-failed"
           chip={<span className="font-mono text-label text-muted-foreground">{activities.failed.length}</span>}
         >
           <div className="max-h-72 overflow-y-auto">
             {activities.failed.length === 0 ? (
-              <div className="px-3 py-2 text-body text-muted-foreground">No failures.</div>
+              <div className="px-3 py-2 text-body text-muted-foreground">没有失败记录。</div>
             ) : (
               activities.failed.slice(0, 12).map((item) => (
                 <ActivityRow
@@ -301,14 +301,14 @@ function DashboardActivityPanel({
       </div>
 
       <DetailPanel
-        title="In progress"
+        title="处理中"
         tone={activities.inProgress.length > 0 ? "warning" : "neutral"}
         testId="dashboard-activity-in-progress"
         chip={<span className="font-mono text-label text-muted-foreground">{activities.inProgress.length}</span>}
       >
         <div className="max-h-48 overflow-y-auto">
           {activities.inProgress.length === 0 ? (
-            <div className="px-3 py-2 text-body text-muted-foreground">{idleReason ?? "No active jobs."}</div>
+            <div className="px-3 py-2 text-body text-muted-foreground">{idleReason ?? "没有运行中的任务。"}</div>
           ) : (
             activities.inProgress.slice(0, 8).map((item) => (
               <ActivityRow
@@ -323,13 +323,13 @@ function DashboardActivityPanel({
       </DetailPanel>
 
       <DetailPanel
-        title="Queued"
+        title="排队中"
         testId="dashboard-activity-queued"
         chip={<span className="font-mono text-label text-muted-foreground">{activities.queued.length}</span>}
       >
         <div className="max-h-48 overflow-y-auto">
           {activities.queued.length === 0 ? (
-            <div className="px-3 py-2 text-body text-muted-foreground">{idleReason ? "No work is queued." : "Queue is empty."}</div>
+            <div className="px-3 py-2 text-body text-muted-foreground">{idleReason ? "没有排队中的任务。" : "队列为空。"}</div>
           ) : (
             activities.queued.slice(0, 8).map((item) => (
               <ActivityRow key={item.id} item={item} timeRef="queuedAt" />
@@ -396,19 +396,19 @@ export default function Dashboard() {
         active="dashboard"
         status={(
           <>
-            <span><span className="font-mono text-foreground">{watchedRepos.length}</span> repos</span>
-            <span><span className="font-mono text-foreground">{totalPRs}</span> PRs</span>
-            <span><span className="font-mono text-foreground">{totalIssues}</span> issues</span>
+            <span><span className="font-mono text-foreground">{watchedRepos.length}</span> 仓库</span>
+            <span><span className="font-mono text-foreground">{totalPRs}</span> PR</span>
+            <span><span className="font-mono text-foreground">{totalIssues}</span> 议题</span>
             {failedTotal > 0 && (
               <button
                 type="button"
                 onClick={() => scrollToId("failed-activity", mainScrollRef.current)}
-                title="Jump to failed activity"
-                aria-label="Jump to failed activity"
+                title="跳转到失败活动"
+                aria-label="跳转到失败活动"
                 data-testid="header-failed-link"
                 className="cursor-pointer rounded-md border border-destructive/40 bg-destructive/[0.06] px-1.5 py-0 text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <span className="font-mono">{failedTotal}</span> failed →
+                <span className="font-mono">{failedTotal}</span> 失败 →
               </button>
             )}
           </>
@@ -418,23 +418,23 @@ export default function Dashboard() {
       <main ref={mainScrollRef} className="flex-1 overflow-y-auto p-4 lg:p-6">
         <div className="space-y-4">
           <section data-testid="dashboard-kpi-strip" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <KpiCell label="Watched repos" value={watchedRepos.length} testId="kpi-repos" />
-            <KpiCell label="Open PRs" value={totalPRs} testId="kpi-prs" />
-            <KpiCell label="Open issues" value={totalIssues} testId="kpi-issues" />
+            <KpiCell label="关注的仓库" value={watchedRepos.length} testId="kpi-repos" />
+            <KpiCell label="未关闭的 PR" value={totalPRs} testId="kpi-prs" />
+            <KpiCell label="未关闭的议题" value={totalIssues} testId="kpi-issues" />
             <KpiCell
-              label="Processing"
+              label="处理中"
               value={inProgressPRs}
               tone={inProgressPRs > 0 ? "primary" : "neutral"}
               testId="kpi-processing"
             />
             <KpiCell
-              label="Active jobs"
+              label="运行中的任务"
               value={activeJobs}
               tone={activeJobs > 0 ? "warning" : "neutral"}
               testId="kpi-active-jobs"
             />
             <KpiCell
-              label="Failed"
+              label="失败"
               value={failedTotal}
               tone={failedTotal > 0 ? "destructive" : "neutral"}
               testId="kpi-failed"
@@ -444,9 +444,9 @@ export default function Dashboard() {
           </section>
 
           <div className="grid gap-4 lg:grid-cols-[1fr_24rem]">
-            <section aria-label="Repository overview">
+            <section aria-label="仓库概览">
               <div className="border-b border-border pb-2 text-label uppercase tracking-wider text-muted-foreground">
-                Repositories
+                仓库
                 {watchedRepos.length > 0 && (
                   <span className="ml-2 font-mono text-foreground/80">({watchedRepos.length})</span>
                 )}
@@ -463,12 +463,12 @@ export default function Dashboard() {
                   className="mt-3 flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/10 px-4 py-6 text-body text-muted-foreground"
                 >
                   <AlertTriangle className="h-4 w-4 text-warning-foreground" />
-                  <div>No repositories are being watched yet.</div>
+                  <div>尚未关注任何仓库。</div>
                   <Link
                     href="/settings"
                     className="text-label uppercase tracking-wider text-primary underline decoration-border underline-offset-2 hover:text-primary/90"
                   >
-                    Add a repo in settings →
+                    前往设置添加仓库 →
                   </Link>
                 </div>
               ) : (
@@ -480,9 +480,9 @@ export default function Dashboard() {
               )}
             </section>
 
-            <aside aria-label="Activity">
+            <aside aria-label="活动">
               <div className="border-b border-border pb-2 text-label uppercase tracking-wider text-muted-foreground">
-                Activity
+                活动
               </div>
               <div className="mt-3">
                 <DashboardActivityPanel activities={activities} idleReason={activityIdleReason} />

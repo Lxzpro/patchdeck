@@ -52,7 +52,7 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
       .catch((authError: unknown) => {
         if (!cancelled) {
           const message = authError instanceof Error ? authError.message : "";
-          setError(getErrorMessage(message, "Could not check login state."));
+          setError(getErrorMessage(message, "无法检查登录状态。"));
         }
       });
 
@@ -77,7 +77,7 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
       const responseText = await response.text();
 
       if (!response.ok) {
-        setError(getErrorMessage(responseText, "Login failed."));
+        setError(getErrorMessage(responseText, "登录失败。"));
         return;
       }
 
@@ -85,7 +85,7 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
       try {
         setStatus(JSON.parse(responseText) as AuthStatus);
       } catch {
-        setError(getErrorMessage(responseText, "Login failed."));
+        setError(getErrorMessage(responseText, "登录失败。"));
       }
     } finally {
       setSubmitting(false);
@@ -96,7 +96,7 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
         <div className="border border-border px-4 py-3 text-body uppercase text-muted-foreground">
-          {error ?? "Loading PatchDeck"}
+          {error ?? "正在加载 PatchDeck"}
         </div>
       </div>
     );
@@ -113,18 +113,18 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
         onSubmit={submitLogin}
       >
         <div className="mb-5 space-y-1">
-          <p className="text-label uppercase text-muted-foreground">Remote access</p>
-          <h1 className="text-title font-semibold">Sign in to PatchDeck</h1>
+          <p className="text-label uppercase text-muted-foreground">远程访问</p>
+          <h1 className="text-title font-semibold">登录 PatchDeck</h1>
         </div>
 
         {!status.loginConfigured ? (
           <div className="border border-warning-border bg-warning-muted p-3 text-body text-warning-foreground">
-            Remote login is not configured on this server.
+            此服务尚未配置远程登录。
           </div>
         ) : (
           <>
             <label className="mb-3 block text-body">
-              <span className="mb-1 block text-muted-foreground">Username</span>
+              <span className="mb-1 block text-muted-foreground">用户名</span>
               <input
                 className="w-full border border-input bg-background px-3 py-2 text-body text-foreground outline-none focus:border-ring"
                 autoComplete="username"
@@ -134,7 +134,7 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
             </label>
 
             <label className="mb-4 block text-body">
-              <span className="mb-1 block text-muted-foreground">Password</span>
+              <span className="mb-1 block text-muted-foreground">密码</span>
               <input
                 className="w-full border border-input bg-background px-3 py-2 text-body text-foreground outline-none focus:border-ring"
                 autoComplete="current-password"
@@ -155,7 +155,7 @@ export function WebLoginGate({ children }: WebLoginGateProps) {
               disabled={submitting}
               type="submit"
             >
-              {submitting ? "Signing in" : "Sign in"}
+              {submitting ? "正在登录" : "登录"}
             </button>
           </>
         )}

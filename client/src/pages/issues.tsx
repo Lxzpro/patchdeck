@@ -1,3 +1,4 @@
+import { formatStatusLabel } from "@/lib/displayLabels";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, CircleDashed, CircleSlash, ExternalLink, Loader2, PanelRightClose, PanelRightOpen, Plus, RefreshCw, ShieldCheck, Trash2, Wrench, X } from "lucide-react";
@@ -71,7 +72,7 @@ function writeCachedIssues(data: IssueListPage): void {
 function parseIssueListPageOrThrow(value: unknown): IssueListPage {
   const parsed = issueListPageSchema.safeParse(value);
   if (!parsed.success) {
-    throw new Error("Invalid issue list response");
+    throw new Error("议题列表响应格式无效");
   }
   return parsed.data;
 }
@@ -85,10 +86,10 @@ function parseIssueOrNull(value: unknown): Issue | null {
 }
 
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "n/a";
+  if (!value) return "暂无";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "n/a";
-  return date.toLocaleString("en-US", {
+  if (Number.isNaN(date.getTime())) return "暂无";
+  return date.toLocaleString("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -103,7 +104,7 @@ function formatGitHubUsername(username?: string | null): string {
 }
 
 function formatBodyPreview(body: string | null | undefined): string {
-  if (!body) return "No body provided.";
+  if (!body) return "暂无正文。";
   const text = body.trim().replace(/\s+/g, " ");
   return text.length > 220 ? `${text.slice(0, 220)}...` : text;
 }
@@ -156,23 +157,23 @@ function matchesNumberSearch(number: number, search: string): boolean {
 function getWorkPrReadiness(issue: Issue): { label: string; detail: string; tone: "success" | "warning" | "neutral" } {
   if (issue.workPrMergeable === true) {
     return {
-      label: "Ready to merge",
-      detail: `PR #${issue.workPrNumber} is mergeable on GitHub`,
+      label: "可以合并",
+      detail: `GitHub 显示 PR #${issue.workPrNumber} 可以合并`,
       tone: "success",
     };
   }
 
   if (issue.workPrMergeable === false) {
     return {
-      label: "PR needs attention",
-      detail: `PR #${issue.workPrNumber} is not mergeable yet`,
+      label: "PR 需要关注",
+      detail: `PR #${issue.workPrNumber} 尚不可合并`,
       tone: "warning",
     };
   }
 
   return {
-    label: "PR opened",
-    detail: `PR #${issue.workPrNumber} on GitHub`,
+    label: "已创建 PR",
+    detail: `GitHub 上的 PR #${issue.workPrNumber}`,
     tone: "neutral",
   };
 }
@@ -193,25 +194,25 @@ function formatIssueWorkAttempt(issue: Issue): string | null {
     return null;
   }
 
-  return `attempt ${issue.workAttemptCount ?? 1}`;
+  return `第 ${issue.workAttemptCount ?? 1} 次尝试`;
 }
 
 function formatEvaluationState(issue: Issue): string {
   if (!issue.evaluationStatus) {
-    return "not evaluated";
+    return "尚未评估";
   }
 
-  return issue.evaluationStatus.replace("_", " ");
+  return formatStatusLabel(issue.evaluationStatus);
 }
 
 function formatEvaluationConfidence(confidence: number): string {
   const grade = confidence >= 0.9
-    ? "very high"
+    ? "很高"
     : confidence >= 0.75
-    ? "high"
+    ? "高"
     : confidence >= 0.5
-    ? "medium"
-    : "low";
+    ? "中"
+    : "低";
 
   return `${grade} (${Math.round(confidence * 100)}%)`;
 }
@@ -256,14 +257,14 @@ function issueLifecycleLabel(issue: Issue): string | null {
   }
 
   if (issue.workPrUrl && issue.workPrMergeable === false) {
-    return "pr needs attention";
+    return "PR 需要关注";
   }
 
   if (issue.workPrUrl) {
     return null;
   }
 
-  return "work finished";
+  return "处理完成";
 }
 
 function shouldShowIssueAutomationState(issue: Issue): boolean {
@@ -287,7 +288,7 @@ function formatLogMetadataValue(key: string, value: unknown): string {
 
   if (typeof value === "string") {
     if (key === "prUrl") {
-      return "open PR";
+      return "打开 PR";
     }
     return value;
   }
@@ -322,7 +323,7 @@ function getLogMetadataEntries(metadata: LogEntry["metadata"]): Array<{ key: str
 
     return [{
       key,
-      label: key === "issueNumber" ? "issue" : key === "prNumber" ? "pr" : key === "prUrl" ? "PR link" : key,
+      label: key === "issueNumber" ? "议题" : key === "prNumber" ? "pr" : key === "prUrl" ? "PR 链接" : key,
       value: formatLogMetadataValue(key, value),
       href: key === "prUrl" && typeof value === "string" ? value : undefined,
     }];
@@ -334,7 +335,7 @@ function IssueStatusBadge({ issue }: { issue: Issue }) {
     <StatusChip
       tone={issueWorkStatusTone(issue.workStatus)}
       pulsing={issue.workStatus === "in_progress"}
-      label={issue.workStatus.replace("_", " ")}
+      label={formatStatusLabel(issue.workStatus)}
     />
   );
 }
@@ -394,7 +395,7 @@ function IssueRow({
           >
             <ExternalLink className="h-3 w-3" />
             PR <span className="font-mono">#{issue.externalWorkPrNumber}</span>
-            <span className="text-warning-foreground/70">external linked</span>
+            <span className="text-warning-foreground/70">已关联外部 PR</span>
           </a>
         )
       : issue.workStatus === "queued" || issue.workStatus === "in_progress"
@@ -432,7 +433,7 @@ function IssueRow({
             {issue.repo} <span className="font-mono text-foreground/70">#{issue.number}</span>
           </div>
           <div className="mt-0.5 text-label text-muted-foreground">
-            by {formatGitHubUsername(issue.author)}
+            作者 {formatGitHubUsername(issue.author)}
           </div>
           <div className="mt-1 line-clamp-2 text-body leading-5 text-muted-foreground">
             {formatBodyPreview(issue.body)}
@@ -450,7 +451,7 @@ function IssueRow({
             {verifyState && <VerifyStateBadge state={verifyState} />}
             {lifecycle && (
               <StatusChip
-                tone={lifecycle === "pr needs attention" ? "warning" : "neutral"}
+                tone={issue.workPrMergeable === false ? "warning" : "neutral"}
                 label={lifecycle}
                 testId="issue-lifecycle-badge"
               />
@@ -458,7 +459,7 @@ function IssueRow({
             {issue.subtasks && issue.subtasks.length >= 2 && (
               <StatusChip
                 tone="primary"
-                label={`${issue.subtasks.length} bugs`}
+                label={`${issue.subtasks.length} 个问题`}
                 title={issue.subtasks.map((task) => `• ${task.title}`).join("\n")}
                 testId="issue-multi-bug-badge"
               />
@@ -528,12 +529,12 @@ function IssueRowSkeleton() {
 
 function SubtaskStatusIcon({ status }: { status: IssueSubtask["status"] }) {
   if (status === "done") {
-    return <CheckCircle2 className="h-3.5 w-3.5 text-success-foreground" aria-label="done" />;
+    return <CheckCircle2 className="h-3.5 w-3.5 text-success-foreground" aria-label="已完成" />;
   }
   if (status === "deferred" || status === "skipped") {
-    return <CircleSlash className="h-3.5 w-3.5 text-muted-foreground" aria-label={status} />;
+    return <CircleSlash className="h-3.5 w-3.5 text-muted-foreground" aria-label={formatStatusLabel(status)} />;
   }
-  return <CircleDashed className="h-3.5 w-3.5 text-warning-foreground" aria-label="pending" />;
+  return <CircleDashed className="h-3.5 w-3.5 text-warning-foreground" aria-label="待处理" />;
 }
 
 function SubtaskListPanel({ subtasks }: { subtasks: IssueSubtask[] }) {
@@ -541,11 +542,11 @@ function SubtaskListPanel({ subtasks }: { subtasks: IssueSubtask[] }) {
 
   return (
     <DetailPanel
-      title="Subtasks"
+      title="子任务"
       testId="issue-subtasks"
       chip={(
         <span className="font-mono text-label text-muted-foreground">
-          {doneCount} / {subtasks.length} done
+          {doneCount} / {subtasks.length} 已完成
         </span>
       )}
     >
@@ -674,11 +675,11 @@ function IssueLogPanel({
           type="button"
           onClick={onToggleCollapsed}
           data-testid="button-toggle-issue-activity-panel"
-          title="Expand activity"
+          title="展开活动"
           className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <PanelRightOpen className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="sr-only">Expand activity</span>
+          <span className="sr-only">展开活动</span>
         </button>
       </div>
     );
@@ -691,45 +692,45 @@ function IssueLogPanel({
           className="flex-1 bg-muted px-3 py-2 text-label uppercase tracking-wider text-foreground shadow-[inset_0_-2px_0_0_hsl(var(--primary))]"
           data-testid="tab-issue-activity"
         >
-          Activity
+          活动
         </div>
         <button
           type="button"
           onClick={onToggleCollapsed}
           data-testid="button-toggle-issue-activity-panel"
-          title="Collapse activity"
+          title="收起活动"
           className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <PanelRightClose className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="sr-only">Collapse activity</span>
+          <span className="sr-only">收起活动</span>
         </button>
       </div>
       <GlobalActivityPanel activities={activities} queueStatusById={queueStatusById} idleReason={idleReason} />
       <div className="flex-1 overflow-y-auto" data-testid="issue-detail-logs">
         {!selected ? (
           <div className="p-4 text-body text-muted-foreground">
-            Select an issue to see logs.
+            选择议题以查看日志。
           </div>
         ) : logs.length === 0 ? (
           <div className="p-4 text-body text-muted-foreground">
-            No workflow logs yet.
+            暂无工作流日志。
           </div>
         ) : viewLogs.length === 0 ? (
           <div className="p-4 text-body text-muted-foreground">
-            View cleared. New log entries will appear here.
+            视图已清空，新日志会显示在此处。
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2">
               <span className="text-label uppercase tracking-wider text-muted-foreground">
-                {viewLogs.length} visible
+                {viewLogs.length} 可见
               </span>
               <button
                 type="button"
                 onClick={() => setClearedLogIds(new Set(logs.map((log) => log.id)))}
                 className="cursor-pointer rounded-md border border-border bg-transparent px-2 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                Clear view
+                清空视图
               </button>
             </div>
             {viewLogs.map((entry) => <IssueLogRow key={entry.id} entry={entry} />)}
@@ -764,8 +765,8 @@ function IssuesPage() {
   });
   const queueStatusById = useMemo(() => buildQueueStatusIndex(activities), [activities]);
   const throttledTitle = githubRateLimit?.resetAt
-    ? `GitHub rate limited until ${formatDateTime(githubRateLimit.resetAt)}`
-    : "GitHub rate limited";
+    ? `GitHub 请求已限流，将于 ${formatDateTime(githubRateLimit.resetAt)} 恢复`
+    : "GitHub 请求已限流";
   const cachedIssues = useMemo(() => readCachedIssues(), []);
 
   const clearFailedActivitiesMutation = useMutation({
@@ -778,7 +779,7 @@ function IssuesPage() {
     },
     onError: (error) => {
       toast({
-        title: "Could not clear failed activities",
+        title: "无法清除失败活动",
         description: error instanceof Error ? error.message : String(error),
         variant: "destructive",
       });
@@ -844,7 +845,7 @@ function IssuesPage() {
     } catch (error) {
       toast({
         variant: "destructive",
-        description: `Could not load more issues: ${error instanceof Error ? error.message : String(error)}`,
+        description: `无法加载更多议题：${error instanceof Error ? error.message : String(error)}`,
       });
     } finally {
       setIsLoadingMore(false);
@@ -859,13 +860,13 @@ function IssuesPage() {
         if (rateLimit.limited) {
           const resetLabel = rateLimit.resetAt ? formatDateTime(rateLimit.resetAt) : "later";
           toast({
-            title: "Full sweep blocked",
+            title: "全面同步受阻",
             variant: "destructive",
-            description: `GitHub is rate-limited. Full sweep paused until ${resetLabel}.`,
+            description: `GitHub 请求已限流，全面同步暂停至 ${resetLabel}。`,
           });
           return;
         }
-        toast({ description: "Full sweep started." });
+        toast({ description: "已开始全面同步。" });
       }
       await apiRequest("POST", fullSweep ? "/api/repos/sync?scope=issues&fullSweep=1" : "/api/repos/sync?scope=issues");
       await Promise.all([
@@ -877,11 +878,11 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/repos/settings"] }),
       ]);
       setExtraPages([]);
-      toast({ description: fullSweep ? "Full sweep completed." : "Issue sync completed." });
+      toast({ description: fullSweep ? "全面同步完成。" : "议题同步完成。" });
     } catch (error) {
       toast({
         variant: "destructive",
-        description: `${fullSweep ? "Could not run full sweep" : "Could not sync repositories"}: ${error instanceof Error ? error.message : String(error)}`,
+        description: `${fullSweep ? "无法执行全面同步" : "无法同步仓库"}: ${error instanceof Error ? error.message : String(error)}`,
       });
     } finally {
       setIsSyncingRepos(false);
@@ -933,7 +934,7 @@ function IssuesPage() {
     && Number.isInteger(manualPullIssueNumber)
     && manualPullIssueNumber > 0
     && !globalDrainMode;
-  const manualPullRepoHint = manualPullRepo ?? "select a repo first";
+  const manualPullRepoHint = manualPullRepo ?? "请先选择仓库";
   const filteredIssues = useMemo(
     () => issues
       .filter((issue) => selectedRepo === "all" || issue.repo === selectedRepo)
@@ -986,12 +987,12 @@ function IssuesPage() {
     queryKey: ["/api/issues/detail", selectedIssueFromList?.repo ?? "", selectedIssueFromList?.number ?? 0],
     queryFn: async () => {
       if (!selectedIssueFromList) {
-        throw new Error("No issue selected");
+        throw new Error("尚未选择议题");
       }
 
       const parsed = parseIssueOrNull(await fetchJson<unknown>(issueDetailUrl(selectedIssueFromList)));
       if (!parsed) {
-        throw new Error("Invalid issue detail response");
+        throw new Error("议题详情响应格式无效");
       }
       return parsed;
     },
@@ -1040,7 +1041,7 @@ function IssuesPage() {
   const aggregateSyncedFallback = totalIssueCount;
 
   const { data: issueLogs = [] } = useQuery<LogEntry[]>({
-    queryKey: ["/api/logs", selectedIssueKey ?? "issue"],
+    queryKey: ["/api/logs", selectedIssueKey ?? "议题"],
     queryFn: async () => {
       if (!selectedIssueKey) {
         return [];
@@ -1066,10 +1067,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/activities"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Queued issue work safely for #${issue.number}.` });
+      toast({ description: `已将议题 #${issue.number} 加入处理队列。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not queue issue work: ${error.message}` });
+      toast({ variant: "destructive", description: `无法将议题加入处理队列：${error.message}` });
     },
   });
 
@@ -1105,15 +1106,15 @@ function IssuesPage() {
       if (failed.length > 0) {
         toast({
           variant: "destructive",
-          description: `Queued ${queued.length} issue${queued.length === 1 ? "" : "s"}; ${failed.length} failed to queue.`,
+          description: `已将 ${queued.length} 个议题加入队列，${failed.length} 个加入失败。`,
         });
         return;
       }
 
-      toast({ description: `Queued issue work safely for ${queued.length} issue${queued.length === 1 ? "" : "s"}.` });
+      toast({ description: `已将 ${queued.length} 个议题加入处理队列。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not start issue work: ${error.message}` });
+      toast({ variant: "destructive", description: `无法启动议题处理：${error.message}` });
     },
   });
 
@@ -1132,10 +1133,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/activities"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Cleared failed work attempts for #${issue.number}.` });
+      toast({ description: `已清除 #${issue.number} 的失败处理记录。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not clear issue failures: ${error.message}` });
+      toast({ variant: "destructive", description: `无法清除议题失败记录：${error.message}` });
     },
   });
 
@@ -1143,7 +1144,7 @@ function IssuesPage() {
     mutationFn: async (activity: ActivityItem) => {
       const issueTarget = parseIssueTargetId(activity.targetId);
       if (!issueTarget) {
-        throw new Error(`Invalid issue activity target: ${activity.targetId}`);
+        throw new Error(`无效的议题活动标识：${activity.targetId}`);
       }
 
       const res = await apiRequest("DELETE", "/api/issues/work/failures", issueTarget);
@@ -1156,10 +1157,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/activities"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Cleared failed work attempts for #${issue.number}.` });
+      toast({ description: `已清除 #${issue.number} 的失败处理记录。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not clear issue failures: ${error.message}` });
+      toast({ variant: "destructive", description: `无法清除议题失败记录：${error.message}` });
     },
   });
 
@@ -1178,10 +1179,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/activities"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Queued evaluation for #${issue.number}.` });
+      toast({ description: `已安排评估 #${issue.number}。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not queue issue evaluation: ${error.message}` });
+      toast({ variant: "destructive", description: `无法安排议题评估：${error.message}` });
     },
   });
   const verifyingIssueIds = useMemo(() => {
@@ -1241,10 +1242,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/activities"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Queued verification for #${issue.number}.` });
+      toast({ description: `已安排验证 #${issue.number}。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not queue verification: ${error.message}` });
+      toast({ variant: "destructive", description: `无法安排验证：${error.message}` });
     },
   });
 
@@ -1262,10 +1263,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/issues/detail", issue.repo, issue.number] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Synced issue #${issue.number}.` });
+      toast({ description: `已同步议题 #${issue.number}。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not sync issue: ${error.message}` });
+      toast({ variant: "destructive", description: `无法同步议题：${error.message}` });
     },
   });
 
@@ -1289,10 +1290,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/issues/coverage"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Pulled issue ${issue.repo}#${issue.number}.` });
+      toast({ description: `已拉取议题 ${issue.repo}#${issue.number}。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not pull issue: ${error.message}` });
+      toast({ variant: "destructive", description: `无法拉取议题：${error.message}` });
     },
   });
 
@@ -1310,10 +1311,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/prs", pr.id] }),
         queryClient.invalidateQueries({ queryKey: ["/api/activities"] }),
       ]);
-      toast({ description: `Pulled PR ${pr.repo}#${pr.number}.` });
+      toast({ description: `已拉取 PR ${pr.repo}#${pr.number}。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not pull PR: ${error.message}` });
+      toast({ variant: "destructive", description: `无法拉取 PR：${error.message}` });
     },
   });
 
@@ -1334,10 +1335,10 @@ function IssuesPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/issues/detail", issue.repo, issue.number] }),
         queryClient.invalidateQueries({ queryKey: ["/api/logs", issue.id] }),
       ]);
-      toast({ description: `Updated labels for #${issue.number}.` });
+      toast({ description: `已更新 #${issue.number} 的标签。` });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not update issue labels: ${error.message}` });
+      toast({ variant: "destructive", description: `无法更新议题标签：${error.message}` });
     },
   });
 
@@ -1380,7 +1381,7 @@ function IssuesPage() {
     autoEnabled: config?.autoIssues !== false,
     trackedCount: totalScopeCount,
     eligibleCount: startableVisibleIssues.length,
-    trackedLabel: "issue",
+    trackedLabel: "议题",
   });
 
   return (
@@ -1398,12 +1399,12 @@ function IssuesPage() {
                   <span className="font-mono text-foreground">{totalIssueCount}</span>
                 </>
               )}
-              {" "}open
+              {" "}未关闭
             </span>
-            <span><span className="font-mono text-foreground">{activeIssueCount}</span> active</span>
+            <span><span className="font-mono text-foreground">{activeIssueCount}</span> 处理中</span>
             {runtime?.drainMode && (
               <span className="rounded-md border border-border px-1.5 py-0.5 text-label uppercase tracking-wider text-muted-foreground">
-                paused
+                已暂停
               </span>
             )}
           </>
@@ -1421,7 +1422,7 @@ function IssuesPage() {
                 data-testid="issues-error-pill"
               >
                 <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                Errors
+                错误
                 <span className="font-mono">{activeErrorCount}</span>
               </button>
             )}
@@ -1434,7 +1435,7 @@ function IssuesPage() {
               className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-label uppercase tracking-wider text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
             >
               {globalDrainMode ? <span className="h-3.5 w-3.5" /> : (isSyncingRepos || isFetching) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-              {globalDrainMode ? "paused" : "sync"}
+              {globalDrainMode ? "已暂停" : "同步"}
             </button>
             <ActivityMenu
               activities={activities}
@@ -1466,13 +1467,13 @@ function IssuesPage() {
         >
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2 text-label uppercase tracking-wider text-muted-foreground">
             <div className="min-w-0">
-              Watched issues
+              关注的议题
               <span className="ml-2 normal-case tracking-normal text-muted-foreground/80">
                 {selectedCoverage
-                  ? `synced ${selectedCoverage.syncedOpenCount}${selectedCoverage.githubOpenCount !== null ? ` / GitHub ${selectedCoverage.githubOpenCount}` : ""}`
+                  ? `已同步 ${selectedCoverage.syncedOpenCount}${selectedCoverage.githubOpenCount !== null ? ` / GitHub ${selectedCoverage.githubOpenCount}` : ""}`
                   : selectedRepo !== "all"
-                    ? `synced ${selectedSyncedFallback}${aggregateCoverage.github !== null ? ` / GitHub ${aggregateCoverage.github}` : " / GitHub ?"}`
-                    : `synced ${aggregateSyncedFallback}${aggregateCoverage.github !== null ? ` / GitHub ${aggregateCoverage.github}` : " / GitHub ?"}`}
+                    ? `已同步 ${selectedSyncedFallback}${aggregateCoverage.github !== null ? ` / GitHub ${aggregateCoverage.github}` : " / GitHub ?"}`
+                    : `已同步 ${aggregateSyncedFallback}${aggregateCoverage.github !== null ? ` / GitHub ${aggregateCoverage.github}` : " / GitHub ?"}`}
               </span>
             </div>
             <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
@@ -1487,18 +1488,18 @@ function IssuesPage() {
                 }
                 title={
                   globalDrainMode
-                    ? "Issue work is paused by drain mode"
+                    ? "排空模式已暂停议题处理"
                     : isGitHubThrottled
                       ? throttledTitle
                       : startableVisibleIssues.length === 0
-                        ? "No visible auto-eligible idle issues to start"
-                        : `Queue work for ${startableVisibleIssues.length} visible issue${startableVisibleIssues.length === 1 ? "" : "s"}`
+                        ? "当前没有可自动处理的空闲议题"
+                        : `将当前可见的 ${startableVisibleIssues.length} 个议题加入处理队列`
                 }
                 data-testid="button-start-visible-issue-work"
                 className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary px-2 py-0.5 text-label uppercase tracking-wider text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {startVisibleWorkMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wrench className="h-3 w-3" />}
-                {startVisibleWorkMutation.isPending ? "queuing safely" : `queue work (${startableVisibleIssues.length})`}
+                {startVisibleWorkMutation.isPending ? "正在排队" : `加入处理队列（${startableVisibleIssues.length}）`}
               </button>
               <button
                 type="button"
@@ -1508,7 +1509,7 @@ function IssuesPage() {
                 data-testid="button-full-sweep-issues"
                 className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-label uppercase tracking-wider text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
               >
-                {globalDrainMode ? "paused" : "full sweep"}
+                {globalDrainMode ? "已暂停" : "全面同步"}
               </button>
               <button
                 type="button"
@@ -1519,7 +1520,7 @@ function IssuesPage() {
                 className="inline-flex min-h-8 items-center gap-1 rounded-md border border-border px-2 py-0.5 text-label uppercase tracking-wider text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background lg:hidden"
               >
                 {areMobileFiltersOpen ? <ChevronUp className="h-3 w-3" aria-hidden="true" /> : <ChevronDown className="h-3 w-3" aria-hidden="true" />}
-                filters
+                筛选
               </button>
             </div>
           </div>
@@ -1538,15 +1539,15 @@ function IssuesPage() {
               className="flex flex-wrap items-start gap-2"
             >
               <span className="mt-1 w-14 shrink-0 text-label font-medium uppercase tracking-wider text-muted-foreground">
-                Pull
+                拉取
               </span>
               <div className="flex min-w-0 flex-1 flex-wrap gap-1">
-                <label htmlFor="manual-issue-pr-number" className="sr-only">Issue or pull request number</label>
+                <label htmlFor="manual-issue-pr-number" className="sr-only">议题或 PR 编号</label>
                 <input
                   id="manual-issue-pr-number"
                   value={manualPullNumber}
                   onChange={(event) => setManualPullNumber(event.target.value)}
-                  placeholder={`# for ${manualPullRepoHint}`}
+                  placeholder={`${manualPullRepoHint} 中的编号`}
                   data-testid="input-manual-issue-pr-number"
                   className="h-7 min-w-[11rem] flex-1 rounded-md border border-border bg-background px-2 font-mono text-body text-foreground placeholder:font-sans placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
@@ -1557,7 +1558,7 @@ function IssuesPage() {
                   className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-label uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {manualPullIssueMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />}
-                  Pull issue
+                  拉取议题
                 </button>
                 <button
                   type="button"
@@ -1571,27 +1572,27 @@ function IssuesPage() {
                   className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-label uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {manualPullPrMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />}
-                  Pull PR
+                  拉取 PR
                 </button>
               </div>
             </form>
             <div className="flex flex-wrap items-start gap-2">
               <span className="mt-1 w-14 shrink-0 text-label font-medium uppercase tracking-wider text-muted-foreground">
-                Search
+                搜索
               </span>
-              <label htmlFor="issue-number-search" className="sr-only">Search issue number</label>
+              <label htmlFor="issue-number-search" className="sr-only">搜索议题编号</label>
               <input
                 id="issue-number-search"
                 value={issueNumberSearch}
                 onChange={(event) => setIssueNumberSearch(event.target.value)}
-                placeholder="Search #"
+                placeholder="搜索编号"
                 data-testid="issue-number-search"
                 className="h-7 min-w-0 flex-1 rounded-md border border-border bg-background px-2 font-mono text-body text-foreground placeholder:font-sans placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
             <div className="flex flex-wrap items-start gap-2">
               <span className="mt-1 w-14 shrink-0 text-label font-medium uppercase tracking-wider text-muted-foreground">
-                Repo
+                仓库
               </span>
               <div className="flex min-w-0 flex-1 flex-wrap gap-1">
                 <button
@@ -1603,7 +1604,7 @@ function IssuesPage() {
                       : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
                   }`}
                 >
-                  all ({totalIssueCount})
+                  全部（{totalIssueCount}）
                 </button>
                 {repoCounts.map(([repo, count]) => (
                   <button
@@ -1623,7 +1624,7 @@ function IssuesPage() {
             </div>
             <div className="flex flex-wrap items-start gap-2">
               <span className="mt-1 w-14 shrink-0 text-label font-medium uppercase tracking-wider text-muted-foreground">
-                Status
+                状态
               </span>
               <div className="flex min-w-0 flex-1 flex-wrap gap-1">
             <button
@@ -1635,7 +1636,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              ready to merge ({readyIssueCount})
+              可以合并（{readyIssueCount}）
             </button>
             <button
               type="button"
@@ -1647,7 +1648,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              work finished ({workedIssueCount})
+              处理完成（{workedIssueCount}）
             </button>
             <button
               type="button"
@@ -1659,7 +1660,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              ready to work ({autoEligibleIssueCount})
+              可以处理（{autoEligibleIssueCount}）
             </button>
             <button
               type="button"
@@ -1671,7 +1672,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              needs eval ({needsEvaluationIssueCount})
+              待评估（{needsEvaluationIssueCount}）
             </button>
             <button
               type="button"
@@ -1683,7 +1684,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              review ({reviewIssueCount})
+              待审核（{reviewIssueCount}）
             </button>
             <button
               type="button"
@@ -1695,7 +1696,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              failed ({failedIssueCount})
+              失败（{failedIssueCount}）
             </button>
             <button
               type="button"
@@ -1707,7 +1708,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              stale ({staleIssueCount})
+              已过期（{staleIssueCount}）
             </button>
             <button
               type="button"
@@ -1718,7 +1719,7 @@ function IssuesPage() {
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              all statuses
+              所有状态
             </button>
               </div>
             </div>
@@ -1726,7 +1727,7 @@ function IssuesPage() {
           <div ref={issueListScrollRef} className="min-h-0 flex-1 overflow-y-auto">
             <div data-testid="issue-list">
               {isLoading ? (
-                <div data-testid="issue-list-loading" aria-label="Loading issues">
+                <div data-testid="issue-list-loading" aria-label="正在加载议题">
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <IssueRowSkeleton key={idx} />
                   ))}
@@ -1734,8 +1735,8 @@ function IssuesPage() {
               ) : visibleIssues.length === 0 ? (
                 <div className="p-4 text-body text-muted-foreground">
                   {normalizedIssueNumberSearch
-                    ? `No issues match #${normalizedIssueNumberSearch}.`
-                    : "No open issues found in watched repositories."}
+                    ? `没有匹配 #${normalizedIssueNumberSearch} 的议题。`
+                    : "关注的仓库中没有未关闭的议题。"}
                 </div>
               ) : (
                 <>
@@ -1766,8 +1767,8 @@ function IssuesPage() {
                     <div ref={loadMoreSentinelRef} className="border-t border-border/60 px-4 py-3" data-testid="issues-load-more-sentinel">
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-label uppercase tracking-wider text-muted-foreground">
-                          Loaded <span className="font-mono text-foreground">{loadedScopeCount}</span>
-                          {" "}of <span className="font-mono text-foreground">{totalScopeCount}</span>
+                          已加载 <span className="font-mono text-foreground">{loadedScopeCount}</span>
+                          {" "}/ <span className="font-mono text-foreground">{totalScopeCount}</span>
                         </span>
                         <button
                           type="button"
@@ -1777,14 +1778,14 @@ function IssuesPage() {
                           className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-label uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {isLoadingMore && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
-                          Load more
+                          加载更多
                         </button>
                       </div>
                     </div>
                   ) : totalIssueCount > loadedIssueCount ? (
                     <div className="border-t border-border/60 px-4 py-3 text-label uppercase tracking-wider text-muted-foreground" data-testid="issues-loaded-count">
-                      Loaded <span className="font-mono text-foreground">{loadedScopeCount}</span>
-                      {" "}of <span className="font-mono text-foreground">{totalScopeCount}</span>
+                      已加载 <span className="font-mono text-foreground">{loadedScopeCount}</span>
+                      {" "}/ <span className="font-mono text-foreground">{totalScopeCount}</span>
                     </div>
                   ) : null}
                 </>
@@ -1802,22 +1803,22 @@ function IssuesPage() {
               {(() => {
                 const metaItems: MetaItem[] = [
                   { key: "repo", content: <span>{selectedIssue.repo} <span className="font-mono text-foreground/80">#{selectedIssue.number}</span></span> },
-                  { key: "author", content: <span>author: <span className="text-foreground/80">{formatGitHubUsername(selectedIssue.author)}</span></span> },
-                  { key: "comments", content: <span>comments: <span className="font-mono text-foreground/80">{selectedIssue.comments}</span></span> },
-                  { key: "updated", content: <span>updated <span className="font-mono">{formatDateTime(selectedIssue.updatedAt)}</span></span> },
+                  { key: "author", content: <span>作者： <span className="text-foreground/80">{formatGitHubUsername(selectedIssue.author)}</span></span> },
+                  { key: "comments", content: <span>评论： <span className="font-mono text-foreground/80">{selectedIssue.comments}</span></span> },
+                  { key: "updated", content: <span>更新于 <span className="font-mono">{formatDateTime(selectedIssue.updatedAt)}</span></span> },
                 ];
                 if (selectedIssue.lastSyncSucceededAt) {
-                  metaItems.push({ key: "synced", content: <span>synced <span className="font-mono">{formatDateTime(selectedIssue.lastSyncSucceededAt)}</span></span> });
+                  metaItems.push({ key: "synced", content: <span>已同步 <span className="font-mono">{formatDateTime(selectedIssue.lastSyncSucceededAt)}</span></span> });
                 }
                 if (selectedIssue.lastSyncError) {
-                  metaItems.push({ key: "sync-error", content: <span className="text-destructive">sync error</span> });
+                  metaItems.push({ key: "sync-error", content: <span className="text-destructive">同步错误</span> });
                 }
                 return (
               <DetailHeader
                 title={selectedIssue.title}
                 titleMultiline
                 onBack={() => setMobilePane("list")}
-                backLabel="All issues"
+                backLabel="所有议题"
                 accentTone="warning"
                 failed={selectedIssue.workStatus === "failed"}
                 stageBar={<StageProgressBar stages={buildIssueStages(selectedIssue)} testId="issue-stage-progress" />}
@@ -1864,19 +1865,19 @@ function IssuesPage() {
                       type="button"
                       onClick={() => syncIssueMutation.mutate(selectedIssue)}
                       disabled={syncIssueMutation.isPending || Boolean(runtime?.drainMode)}
-                      title={runtime?.drainMode ? "Issue sync is paused by drain mode" : "Sync issue from GitHub now"}
+                      title={runtime?.drainMode ? "排空模式已暂停议题同步" : "立即从 GitHub 同步议题"}
                       data-testid="button-sync-issue"
                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-transparent px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {syncIssueMutation.isPending ? (
                         <>
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          Syncing
+                          正在同步
                         </>
                       ) : (
                         <>
                           <RefreshCw className="h-3.5 w-3.5" />
-                          Sync
+                          同步
                         </>
                       )}
                     </button>
@@ -1884,19 +1885,19 @@ function IssuesPage() {
                       type="button"
                       onClick={() => evaluateMutation.mutate(selectedIssue)}
                       disabled={evaluateMutation.isPending || Boolean(runtime?.drainMode)}
-                      title={runtime?.drainMode ? "Issue evaluation is paused by drain mode" : "Evaluate this issue for auto work"}
+                      title={runtime?.drainMode ? "排空模式已暂停议题评估" : "评估此议题是否适合自动处理"}
                       data-testid="button-evaluate-issue"
                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-transparent px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {evaluateMutation.isPending ? (
                         <>
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          Evaluating
+                          正在评估
                         </>
                       ) : (
                         <>
                           <ShieldCheck className="h-3.5 w-3.5" />
-                          Evaluate
+                          评估
                         </>
                       )}
                     </button>
@@ -1906,10 +1907,10 @@ function IssuesPage() {
                       disabled={workMutation.isPending || isActiveWorkStatus(selectedIssue.workStatus) || Boolean(selectedIssueQueueStatus) || Boolean(runtime?.drainMode) || selectedIssueHasExternalPr}
                       title={
                         runtime?.drainMode
-                          ? "Manual issue work is paused by drain mode"
+                          ? "排空模式已暂停手动议题处理"
                           : selectedIssueHasExternalPr
-                            ? "Manual issue work is blocked because this issue already has a linked external PR"
-                            : "Queue this issue for work"
+                            ? "此议题已关联外部 PR，无法启动手动处理"
+                            : "将此议题加入处理队列"
                       }
                       data-testid="button-work-issue"
                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-primary bg-primary px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
@@ -1917,12 +1918,12 @@ function IssuesPage() {
                       {workMutation.isPending ? (
                         <>
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          Working
+                          处理中
                         </>
                       ) : (
                         <>
                           <Wrench className="h-3.5 w-3.5" />
-                          Queue work
+                          加入处理队列
                         </>
                       )}
                     </button>
@@ -1939,10 +1940,10 @@ function IssuesPage() {
                       }
                       title={
                         runtime?.drainMode
-                          ? "Verification is paused by drain mode"
+                          ? "排空模式已暂停验证"
                           : !selectedIssue.workPrUrl
-                            ? "Verification requires an open work PR"
-                            : "Check the work PR diff against this issue's subtasks"
+                            ? "需要有未关闭的处理 PR 才能验证"
+                            : "对照议题子任务检查处理 PR 的差异"
                       }
                       data-testid="button-verify-issue"
                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-transparent px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
@@ -1950,12 +1951,12 @@ function IssuesPage() {
                       {isVerifying ? (
                         <>
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          Verifying
+                          验证中
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="h-3.5 w-3.5" />
-                          Verify work
+                          验证处理结果
                         </>
                       )}
                     </button>
@@ -1977,7 +1978,7 @@ function IssuesPage() {
                         type="button"
                         onClick={() => labelMutation.mutate({ issue: selectedIssue, remove: [label] })}
                         disabled={labelMutation.isPending}
-                        title={`Remove ${label}`}
+                        title={`移除 ${label}`}
                         data-testid="button-remove-issue-label"
                         className="inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-40"
                       >
@@ -1985,7 +1986,7 @@ function IssuesPage() {
                       </button>
                     </span>
                   )) : (
-                    <span className="text-label text-muted-foreground">No labels</span>
+                    <span className="text-label text-muted-foreground">暂无标签</span>
                   )}
                   <form
                     className="ml-1 inline-flex items-center gap-1"
@@ -2001,14 +2002,14 @@ function IssuesPage() {
                     <input
                       value={labelInput}
                       onChange={(event) => setLabelInput(event.target.value)}
-                      placeholder="add label"
+                      placeholder="添加标签"
                       data-testid="issue-label-input"
                       className="h-6 w-44 border border-border bg-background px-2 text-label text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     />
                     <button
                       type="submit"
                       disabled={labelMutation.isPending || !labelInput.trim() || selectedIssue.labels.includes(labelInput.trim())}
-                      title="Add label"
+                      title="添加标签"
                       data-testid="button-add-issue-label"
                       className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-40"
                     >
@@ -2054,7 +2055,7 @@ function IssuesPage() {
                   >
                     <span className="min-w-0">
                       <span className="block text-label uppercase tracking-wider opacity-70">
-                        Linked external PR
+                        关联的外部 PR
                       </span>
                       <span className="block truncate text-body leading-5">
                         {selectedIssue.externalWorkPrRepo ?? selectedIssue.repo} #{selectedIssue.externalWorkPrNumber}
@@ -2065,7 +2066,7 @@ function IssuesPage() {
                 )}
                 {selectedIssue.workStatus === "failed" && selectedIssue.lastError && (
                   <DetailPanel
-                    title="Issue work failed"
+                    title="议题处理失败"
                     tone="destructive"
                     testId="issue-work-failed"
                     action={(
@@ -2073,19 +2074,19 @@ function IssuesPage() {
                         type="button"
                         onClick={() => clearFailuresMutation.mutate(selectedIssue)}
                         disabled={clearFailuresMutation.isPending}
-                        title="Clear failed issue work attempts"
+                        title="清除议题处理失败记录"
                         data-testid="button-clear-issue-failures"
                         className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-destructive/50 bg-background/40 px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-destructive transition-colors hover:bg-destructive hover:text-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         {clearFailuresMutation.isPending ? (
                           <>
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            Clearing
+                            正在清除
                           </>
                         ) : (
                           <>
                             <Trash2 className="h-3.5 w-3.5" />
-                            Clear failures
+                            清除失败记录
                           </>
                         )}
                       </button>
@@ -2101,7 +2102,7 @@ function IssuesPage() {
                 )}
                 {shouldShowIssueAutomationState(selectedIssue) && (
                   <DetailPanel
-                    title="Automation gate"
+                    title="自动处理条件"
                     testId="issue-evaluation-detail"
                     chip={(
                       <StatusChip
@@ -2112,20 +2113,20 @@ function IssuesPage() {
                   >
                     <div className="px-3 py-2">
                       <div className="text-body leading-5 text-foreground/85">
-                        {selectedIssue.evaluationSummary ?? selectedIssue.autoWorkBlockedReason ?? "Evaluate this issue before auto-mode can work it."}
+                        {selectedIssue.evaluationSummary ?? selectedIssue.autoWorkBlockedReason ?? "请先评估此议题，再由自动模式处理。"}
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         <span className="border border-border/60 px-2 py-0.5 text-label uppercase tracking-wider text-muted-foreground">
-                          auto: {selectedIssue.autoWorkEligible ? "enabled" : "blocked"}
+                          自动： {selectedIssue.autoWorkEligible ? "enabled" : "blocked"}
                         </span>
                         {typeof selectedIssue.evaluationConfidence === "number" && (
                           <span className="border border-border/60 px-2 py-0.5 text-label uppercase tracking-wider text-muted-foreground">
-                            confidence: {formatEvaluationConfidence(selectedIssue.evaluationConfidence)}
+                            置信度： {formatEvaluationConfidence(selectedIssue.evaluationConfidence)}
                           </span>
                         )}
                         {selectedIssue.evaluationUpdatedAt && (
                           <span className="border border-border/60 px-2 py-0.5 text-label uppercase tracking-wider text-muted-foreground">
-                            evaluated: {formatDateTime(selectedIssue.evaluationUpdatedAt)}
+                            评估时间： {formatDateTime(selectedIssue.evaluationUpdatedAt)}
                           </span>
                         )}
                       </div>
@@ -2142,7 +2143,7 @@ function IssuesPage() {
                   </DetailPanel>
                 )}
                 <div className="mt-3 text-label uppercase tracking-wider text-muted-foreground">
-                  Issue body
+                  议题正文
                 </div>
                 {selectedIssue.bodyHtml ? (
                   <article
@@ -2152,7 +2153,7 @@ function IssuesPage() {
                   />
                 ) : (
                   <pre className="mt-2 whitespace-pre-wrap break-words border border-border/60 bg-background p-4 text-body leading-6 text-muted-foreground">
-                    {selectedIssue.body?.trim() || "No body provided."}
+                    {selectedIssue.body?.trim() || "暂无正文。"}
                   </pre>
                 )}
               </div>
@@ -2161,8 +2162,8 @@ function IssuesPage() {
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-body text-muted-foreground">
               <span className="text-center">
-                <span className="hidden lg:inline">Select an issue from the left panel.</span>
-                <span className="lg:hidden">No issue selected.</span>
+                <span className="hidden lg:inline">请从左侧面板选择议题。</span>
+                <span className="lg:hidden">尚未选择议题。</span>
               </span>
               <button
                 type="button"
@@ -2170,7 +2171,7 @@ function IssuesPage() {
                 data-testid="issue-detail-empty-back"
                 className="inline-flex min-h-8 items-center gap-1 rounded-md border border-border px-2.5 text-label uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background lg:hidden"
               >
-                All issues
+                所有议题
               </button>
             </div>
           )}

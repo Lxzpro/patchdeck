@@ -44,12 +44,12 @@ export function DashboardErrorsPanel({
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="inline-flex items-center gap-2 text-body font-medium uppercase tracking-wider text-destructive">
           <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-          Needs attention
+          需要关注
           <span className="font-mono text-foreground">{activities.failed.length}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="text-label text-muted-foreground">
-            Failed jobs stay here until retried or cleared from activity.
+            失败的任务会保留在此处，直到重试或从活动中清除。
           </div>
           <button
             type="button"
@@ -59,11 +59,11 @@ export function DashboardErrorsPanel({
             className="inline-flex items-center gap-1 rounded-md border border-destructive/50 px-2 py-0.5 text-label uppercase tracking-wider text-destructive transition-colors hover:bg-destructive hover:text-background disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           >
             {isClearingFailed ? (
-              "Clearing"
+              "正在清除"
             ) : (
               <>
                 <Trash2 className="h-3 w-3" aria-hidden="true" />
-                Clear failed
+                清除失败记录
               </>
             )}
           </button>
@@ -75,7 +75,7 @@ export function DashboardErrorsPanel({
             className="inline-flex items-center gap-1 rounded-md border border-destructive/50 px-2 py-0.5 text-label uppercase tracking-wider text-destructive transition-colors hover:bg-destructive hover:text-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           >
             {rolledUp ? <ChevronDown className="h-3 w-3" aria-hidden="true" /> : <ChevronUp className="h-3 w-3" aria-hidden="true" />}
-            {rolledUp ? "Expand" : "Roll up"}
+            {rolledUp ? "展开" : "收起"}
           </button>
         </div>
       </div>
@@ -85,7 +85,7 @@ export function DashboardErrorsPanel({
           data-testid="dashboard-errors-rollup-summary"
           title={latestError?.lastError ?? latestError?.detail ?? latestError?.label}
         >
-          {`Latest: ${latestError.label}${latestError.detail ? ` - ${latestError.detail}` : ""}`}
+          {`最新：${latestError.label}${latestError.detail ? ` - ${latestError.detail}` : ""}`}
         </div>
       ) : (
         <>
@@ -113,11 +113,11 @@ export function DashboardErrorsPanel({
                         data-testid="dashboard-clear-issue-failure"
                       >
                         {isClearingIssueFailure ? (
-                          "Clearing"
+                          "正在清除"
                         ) : (
                           <>
                             <Trash2 className="h-3 w-3" aria-hidden="true" />
-                            Clear
+                            清除
                           </>
                         )}
                       </button>
@@ -129,7 +129,7 @@ export function DashboardErrorsPanel({
                         rel="noopener noreferrer"
                         className="shrink-0 rounded-md border border-destructive/50 px-2 py-0.5 text-label uppercase tracking-wider text-destructive transition-colors hover:bg-destructive hover:text-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                       >
-                        Open
+                        打开
                       </a>
                     )}
                   </div>
@@ -147,7 +147,7 @@ export function DashboardErrorsPanel({
           </div>
           {activities.failed.length > 4 && (
             <div className="mt-2 text-label text-muted-foreground">
-              {activities.failed.length - 4} more failed job{activities.failed.length - 4 === 1 ? "" : "s"} in activity.
+              {activities.failed.length - 4} 条其他失败任务 可在活动中查看。
             </div>
           )}
         </>

@@ -62,18 +62,18 @@ test("buildQueueStatusIndex summarizes queued and running activities", () => {
   const index = buildQueueStatusIndex(snapshot, Date.parse("2026-05-12T12:00:00.000Z"));
 
   assert.deepEqual(index.get("pr-1"), {
-    label: "running",
-    detail: "~4m remaining",
+    label: "运行中",
+    detail: "预计剩余 4 分钟",
     className: "border-primary bg-primary/10 text-primary animate-pulse",
   });
   assert.deepEqual(index.get("issue-7"), {
-    label: "up next",
-    detail: "starts in ~4m",
+    label: "即将执行",
+    detail: "约 4 分钟后开始",
     className: "border-primary/50 text-primary",
   });
   assert.deepEqual(index.get("issue-8"), {
-    label: "#2 in queue",
-    detail: "available in ~30s",
+    label: "队列第 2 位",
+    detail: "约 30 秒后可运行",
     className: "border-warning-border bg-warning-muted text-warning-foreground",
   });
 });
@@ -110,12 +110,12 @@ test("buildQueueStatusIndex distinguishes a backing-off retry from a normal queu
   const index = buildQueueStatusIndex(retrying, Date.parse("2026-05-12T12:00:00.000Z"));
   const status = index.get("issue-7");
 
-  assert.equal(status?.label, "retrying (attempt 3)");
-  assert.match(status?.detail ?? "", /retry in ~5m/);
+  assert.equal(status?.label, "正在重试（第 3 次）");
+  assert.match(status?.detail ?? "", /约 5 分钟后重试/);
   assert.match(status?.detail ?? "", /ECONNRESET/);
 });
 
 test("buildQueueStatusIndex still reads as a queue position for untried work", () => {
   const index = buildQueueStatusIndex(snapshot, Date.parse("2026-05-12T12:00:00.000Z"));
-  assert.equal(index.get("issue-7")?.label, "up next");
+  assert.equal(index.get("issue-7")?.label, "即将执行");
 });

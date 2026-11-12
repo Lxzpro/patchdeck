@@ -38,15 +38,15 @@ export function buildQueueStatusIndex(snapshot: ActivitySnapshot, nowMs = Date.n
 
     statusById.set(activity.targetId, {
       label: isRetrying
-        ? `retrying (attempt ${activity.attemptCount + 1})`
-        : position === 1 ? "up next" : `#${position} in queue`,
+        ? `正在重试（第 ${activity.attemptCount + 1} 次）`
+        : position === 1 ? "即将执行" : `队列第 ${position} 位`,
       detail: isRetrying
-        ? `retry in ~${formatDuration(availableDelayMs)}${activity.lastError ? ` - ${activity.lastError}` : ""}`
+        ? `约 ${formatDuration(availableDelayMs)}后重试${activity.lastError ? ` - ${activity.lastError}` : ""}`
         : availableDelayMs > 0
-          ? `available in ~${formatDuration(availableDelayMs)}`
+          ? `约 ${formatDuration(availableDelayMs)}后可运行`
           : waitMs > 0
-            ? `starts in ~${formatDuration(waitMs)}`
-            : "starting soon",
+            ? `约 ${formatDuration(waitMs)}后开始`
+            : "即将开始",
       className: availableDelayMs > 0
         ? "border-warning-border bg-warning-muted text-warning-foreground"
         : "border-primary/50 text-primary",
@@ -61,10 +61,10 @@ export function buildQueueStatusIndex(snapshot: ActivitySnapshot, nowMs = Date.n
     const remainingMs = Math.max(0, estimateMs - elapsedMs);
 
     statusById.set(activity.targetId, {
-      label: "running",
+      label: "运行中",
       detail: remainingMs > 0
-        ? `~${formatDuration(remainingMs)} remaining`
-        : `running for ~${formatDuration(elapsedMs)}`,
+        ? `预计剩余 ${formatDuration(remainingMs)}`
+        : `已运行约 ${formatDuration(elapsedMs)}`,
       className: "border-primary bg-primary/10 text-primary animate-pulse",
     });
   }
@@ -114,19 +114,19 @@ function formatDuration(ms: number): string {
   const totalSeconds = Math.max(1, Math.round(safeMs / 1000));
 
   if (totalSeconds < 60) {
-    return `${totalSeconds}s`;
+    return `${totalSeconds} 秒`;
   }
 
   const totalMinutes = Math.round(totalSeconds / 60);
   if (totalMinutes < 60) {
-    return `${totalMinutes}m`;
+    return `${totalMinutes} 分钟`;
   }
 
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   if (minutes === 0) {
-    return `${hours}h`;
+    return `${hours} 小时`;
   }
 
-  return `${hours}h ${minutes}m`;
+  return `${hours} 小时 ${minutes} 分钟`;
 }

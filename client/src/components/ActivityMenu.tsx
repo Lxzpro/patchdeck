@@ -15,13 +15,13 @@ export const EMPTY_ACTIVITY_SNAPSHOT: ActivitySnapshot = {
   generatedAt: "",
 };
 
-export const QUEUED_DRAIN_COPY = "Queued automation is paused until drain mode is disabled.";
+export const QUEUED_DRAIN_COPY = "排队中的自动任务已暂停，关闭排空模式后继续。";
 
 function formatClock(timestamp: string | null): string | null {
   if (!timestamp) {
     return null;
   }
-  return new Date(timestamp).toLocaleTimeString("en-US", { hour12: false });
+  return new Date(timestamp).toLocaleTimeString("zh-CN", { hour12: false });
 }
 
 function formatPollLabel(pollIntervalMs?: number): string {
@@ -30,13 +30,13 @@ function formatPollLabel(pollIntervalMs?: number): string {
 }
 
 const ACTIVITY_KIND_META: Record<BackgroundJobKind, { label: string; className: string }> = {
-  evaluate_issue: { label: "issue", className: "border-sky-500/40 text-sky-400" },
-  verify_issue: { label: "issue", className: "border-sky-500/40 text-sky-400" },
-  work_issue: { label: "issue", className: "border-sky-500/40 text-sky-400" },
+  evaluate_issue: { label: "议题", className: "border-sky-500/40 text-sky-400" },
+  verify_issue: { label: "议题", className: "border-sky-500/40 text-sky-400" },
+  work_issue: { label: "议题", className: "border-sky-500/40 text-sky-400" },
   babysit_pr: { label: "pr", className: "border-emerald-500/40 text-emerald-400" },
   answer_pr_question: { label: "pr", className: "border-emerald-500/40 text-emerald-400" },
   process_release_run: { label: "release", className: "border-border text-muted-foreground" },
-  sync_watched_repos: { label: "sync", className: "border-border text-muted-foreground" },
+  sync_watched_repos: { label: "同步", className: "border-border text-muted-foreground" },
   generate_social_changelog: { label: "changelog", className: "border-border text-muted-foreground" },
   heal_deployment: { label: "deploy", className: "border-border text-muted-foreground" },
 };
@@ -166,17 +166,17 @@ export function ActivityMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         className="inline-flex min-h-8 items-center gap-1 border border-border px-2 py-0.5 text-label text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:min-h-0"
-        aria-label="Open activity menu"
+        aria-label="打开活动菜单"
         data-testid="activity-menu-trigger"
       >
         <ActivityIcon className="h-3 w-3" aria-hidden="true" />
-        <span>activity</span>
+        <span>活动</span>
         <span className="text-foreground">{totalCount}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-[calc(100dvh-6rem)] w-[calc(100vw-1rem)] max-w-sm overflow-y-auto p-0 sm:w-80">
         <div className="border-b border-border px-2 py-2">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-body font-medium">Activities</div>
+            <div className="text-body font-medium">活动</div>
             {failedCount > 0 && (
               <button
                 type="button"
@@ -185,32 +185,32 @@ export function ActivityMenu({
                 className="border border-border px-1.5 py-0.5 text-label uppercase tracking-wider text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 data-testid="clear-failed-activities"
               >
-                {isClearingFailed ? "clearing" : "clear failed"}
+                {isClearingFailed ? "正在清除" : "清除失败记录"}
               </button>
             )}
           </div>
           <div className="text-label text-muted-foreground">
-            {failedCount} failed / {inProgressCount} in progress / {queuedCount} queued
+            {failedCount} 失败 / {inProgressCount} 处理中 / {queuedCount} 排队中
           </div>
         </div>
         <ActivitySection
-          title="Failed"
+          title="失败"
           items={activities.failed}
-          emptyLabel="No failed activities."
+          emptyLabel="没有失败的活动。"
           queueStatusById={queueStatusById}
         />
         <div className="border-t border-border" />
         <ActivitySection
-          title="In progress"
+          title="处理中"
           items={activities.inProgress}
-          emptyLabel="No automation running right now."
+          emptyLabel="当前没有运行中的自动任务。"
           queueStatusById={queueStatusById}
         />
         <div className="border-t border-border" />
         <ActivitySection
-          title="Queued"
+          title="排队中"
           items={activities.queued}
-          emptyLabel={idleReason ? "No work is queued." : "Queue is empty."}
+          emptyLabel={idleReason ? "没有排队中的任务。" : "队列为空。"}
           queueStatusById={queueStatusById}
         />
         {idleReason && totalCount === 0 && (
@@ -234,7 +234,7 @@ export function ActivityMenu({
             className="border-t border-border px-2 py-1.5 text-label uppercase tracking-wider text-muted-foreground"
             data-testid="activity-poll-footer"
           >
-            poll <span className="font-mono text-foreground/80">{formatPollLabel(pollIntervalMs)}</span>
+            轮询 <span className="font-mono text-foreground/80">{formatPollLabel(pollIntervalMs)}</span>
           </div>
         )}
       </DropdownMenuContent>

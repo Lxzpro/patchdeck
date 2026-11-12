@@ -34,7 +34,7 @@ export function DetailHeader({
   accentTone,
   failed = false,
   onBack,
-  backLabel = "Back to list",
+  backLabel = "返回列表",
 }: DetailHeaderProps) {
   const titleClass = titleMultiline
     ? "line-clamp-2 break-words text-title font-semibold leading-snug tracking-tight"

@@ -40,10 +40,10 @@ export function UpdateBanner() {
           <div className="flex min-w-0 flex-wrap items-center gap-3 text-body">
             <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-warning" />
             <span className="font-medium uppercase tracking-wider text-warning-foreground">
-              Update available
+              有可用更新
             </span>
             <span className="text-foreground/75">
-              {`PatchDeck ${formatAppVersionLabel(status.latestVersion)} is available. You're on ${formatAppVersionLabel(status.currentVersion)}.`}
+              {`PatchDeck ${formatAppVersionLabel(status.latestVersion)} 已发布，当前版本为 ${formatAppVersionLabel(status.currentVersion)}。`}
             </span>
           </div>
           <ol className="list-decimal space-y-1 pl-5 text-label text-foreground/70">
@@ -67,7 +67,7 @@ export function UpdateBanner() {
             rel="noreferrer"
             className="font-medium uppercase tracking-wider text-warning-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           >
-            Update PatchDeck
+            更新 PatchDeck
           </a>
           <button
             onClick={() => {
@@ -78,7 +78,7 @@ export function UpdateBanner() {
             }}
             className="uppercase tracking-wider text-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           >
-            dismiss for now
+            暂时关闭
           </button>
         </div>
       </div>

@@ -18,7 +18,7 @@ import { PageErrorBoundary } from "@/components/PageErrorBoundary";
 
 function DashboardRoute() {
   return (
-    <PageErrorBoundary pageName="Dashboard">
+    <PageErrorBoundary pageName="总览">
       <Dashboard />
     </PageErrorBoundary>
   );
@@ -26,7 +26,7 @@ function DashboardRoute() {
 
 function PRsRoute() {
   return (
-    <PageErrorBoundary pageName="Pull requests">
+    <PageErrorBoundary pageName="拉取请求">
       <PRs />
     </PageErrorBoundary>
   );
@@ -34,7 +34,7 @@ function PRsRoute() {
 
 function SettingsRoute() {
   return (
-    <PageErrorBoundary pageName="Settings">
+    <PageErrorBoundary pageName="设置">
       <Settings />
     </PageErrorBoundary>
   );
@@ -42,7 +42,7 @@ function SettingsRoute() {
 
 function ReleasesRoute() {
   return (
-    <PageErrorBoundary pageName="Releases">
+    <PageErrorBoundary pageName="发布">
       <Releases />
     </PageErrorBoundary>
   );
@@ -50,7 +50,7 @@ function ReleasesRoute() {
 
 function DeploymentsRoute() {
   return (
-    <PageErrorBoundary pageName="Deployments">
+    <PageErrorBoundary pageName="部署">
       <Deployments />
     </PageErrorBoundary>
   );
@@ -58,7 +58,7 @@ function DeploymentsRoute() {
 
 function IssuesRoute() {
   return (
-    <PageErrorBoundary pageName="Issues">
+    <PageErrorBoundary pageName="议题">
       <Issues />
     </PageErrorBoundary>
   );
@@ -66,7 +66,7 @@ function IssuesRoute() {
 
 function LogsRoute() {
   return (
-    <PageErrorBoundary pageName="Logs">
+    <PageErrorBoundary pageName="日志">
       <Logs />
     </PageErrorBoundary>
   );
@@ -74,7 +74,7 @@ function LogsRoute() {
 
 function NotFoundRoute() {
   return (
-    <PageErrorBoundary pageName="Not found">
+    <PageErrorBoundary pageName="未找到">
       <NotFound />
     </PageErrorBoundary>
   );

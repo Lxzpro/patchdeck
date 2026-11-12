@@ -5,7 +5,7 @@ import { SocialPostGenerator } from "@/components/SocialPostGenerator";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
+  return new Date(iso).toLocaleDateString("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -34,12 +34,12 @@ export function GitHubReleaseCard({
             </span>
             {release.draft && (
               <span className="rounded-md border border-warning-border bg-warning-muted px-1.5 py-0 text-label font-medium uppercase tracking-wider text-warning-foreground">
-                draft
+                草稿
               </span>
             )}
             {release.prerelease && (
               <span className="rounded-md border border-warning-border bg-warning-muted px-1.5 py-0 text-label font-medium uppercase tracking-wider text-warning-foreground">
-                pre-release
+                预发布
               </span>
             )}
             <span className="truncate text-title font-semibold tracking-tight">
@@ -50,7 +50,7 @@ export function GitHubReleaseCard({
             <span className="font-mono text-foreground/80">{repoSlug}</span>
             <span className="text-border" aria-hidden="true">·</span>
             <span>
-              published <span className="font-mono">{formatDate(release.publishedAt)}</span>
+              已发布 <span className="font-mono">{formatDate(release.publishedAt)}</span>
             </span>
           </div>
         </div>
@@ -63,7 +63,7 @@ export function GitHubReleaseCard({
               data-testid={`toggle-release-${release.id}`}
               className="cursor-pointer rounded-md border border-border bg-transparent px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             >
-              {expanded ? "Hide" : "Notes"}
+              {expanded ? "隐藏" : "说明"}
             </button>
           )}
           <a

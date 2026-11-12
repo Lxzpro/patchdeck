@@ -99,32 +99,32 @@ export function getOnboardingPanelState(status: OnboardingStatus) {
   const steps: OnboardingStep[] = [
     {
       id: "github",
-      title: "Connect GitHub",
+      title: "连接 GitHub",
       description: githubStepComplete
-        ? `Connected${status.githubUser ? ` as @${status.githubUser}` : ""}.`
-        : "Connect GitHub so the app can read repositories, sync feedback, and add reviewer Actions to your repos.",
+        ? `已连接${status.githubUser ? `，账号 @${status.githubUser}` : ""}。`
+        : "连接 GitHub 后，即可读取仓库、同步反馈，并为仓库添加代码评审工作流。",
       complete: githubStepComplete,
     },
     {
       id: "repo",
-      title: "Track your first repository or PR",
+      title: "关注第一个仓库或 PR",
       description: repoStepComplete
         ? transientGithubWarning
-          ? "Repository tracking preserved while GitHub checks are temporarily rate limited."
-          : `Watching ${accessibleRepos.length} accessible repo${accessibleRepos.length === 1 ? "" : "s"}. Choose per repo whether to track only your PRs or your whole team.`
-        : "Use the Add PR or Watch form below. Adding a PR also adds its repository to the watch list, and watched repos let you choose whether to track only your PRs or the whole team.",
+          ? "GitHub 请求暂时受限，现有仓库关注设置会保留。"
+          : `正在关注 ${accessibleRepos.length} 个可访问仓库，可按仓库选择仅跟踪自己的 PR 或整个团队的 PR。`
+        : "使用下方表单添加 PR 或关注仓库。添加 PR 时会同时关注所在仓库，并可选择仅跟踪自己的 PR 或整个团队的 PR。",
       complete: repoStepComplete,
     },
     {
       id: "workflow",
-      title: "Add a CI reviewer to one of your repos",
+      title: "为仓库添加 CI 代码评审",
       description: workflowStepComplete
         ? transientGithubWarning
-          ? "Reviewer setup preserved while GitHub checks are temporarily rate limited."
-          : `Reviewer Action detected in ${reposWithReview.length} repo${reposWithReview.length === 1 ? "" : "s"}.`
+          ? "GitHub 请求暂时受限，现有评审设置会保留。"
+          : `已在 ${reposWithReview.length} 个仓库中检测到评审工作流。`
         : accessibleRepos.length > 0
-          ? "Drop a code-review GitHub Action into a tracked repo so review comments appear on every new PR. PatchDeck tracks the feedback and queues safe fixes."
-          : "Track a repo first, then add a reviewer GitHub Action to it.",
+          ? "为已关注的仓库添加代码评审 GitHub Action，即可自动评审新 PR。PatchDeck 会跟踪反馈并安排修复。"
+          : "先关注仓库，再为它添加代码评审 GitHub Action。",
       complete: workflowStepComplete,
     },
   ];
@@ -137,8 +137,8 @@ export function getOnboardingPanelState(status: OnboardingStatus) {
   ].sort().join("|") || "complete";
   const hasIssues = pendingSteps.length > 0 || inaccessibleRepos.length > 0;
   const summary = pendingSteps.length > 0
-    ? `${completedCount} of ${steps.length} complete`
-    : `${inaccessibleRepos.length} access issue${inaccessibleRepos.length === 1 ? "" : "s"}`;
+    ? `已完成 ${completedCount}/${steps.length} 项`
+    : `${inaccessibleRepos.length} 个访问问题`;
 
   return {
     accessibleRepos,
@@ -192,7 +192,7 @@ function StepCard({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-label font-medium uppercase tracking-wider">{step.title}</span>
             <span className={`border px-1.5 py-0 text-label uppercase tracking-wider ${step.complete ? "border-border text-muted-foreground" : "border-warning-border text-warning-foreground"}`}>
-              {step.complete ? "done" : "next"}
+              {step.complete ? "已完成" : "下一步"}
             </span>
           </div>
           <p className="text-body text-muted-foreground">{step.description}</p>
@@ -261,13 +261,13 @@ export function OnboardingPanel() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/status"] });
       toast({
-        description: `Added ${REVIEW_TOOL_LABELS[variables.tool]} reviewer Action to ${variables.repo}.`,
+        description: `已为 ${variables.repo} 添加 ${REVIEW_TOOL_LABELS[variables.tool]} 评审工作流。`,
       });
     },
     onError: (error) => {
       toast({
         variant: "destructive",
-        description: `Could not add reviewer Action: ${error.message}`,
+        description: `无法添加评审工作流：${error.message}`,
       });
     },
   });
@@ -275,7 +275,7 @@ export function OnboardingPanel() {
   if (isLoading || !status) return null;
 
   const effectiveGithubError = status.githubError
-    ?? ((githubRateLimit?.limited || githubRateLimit?.recentlyLimited) ? "rate limit gate active" : undefined);
+    ?? ((githubRateLimit?.limited || githubRateLimit?.recentlyLimited) ? "限流保护已生效" : undefined);
   const transientGithubWarning = isTransientGitHubWarning(effectiveGithubError);
   const hasCurrentReviewer = status.repos.some((repo) => hasDetectedCodeReviewWorkflow(repo.codeReviews));
   const shouldUseCachedRepoStatus = transientGithubWarning && status.repos.length === 0 && lastHasTrackedRepo;
@@ -335,7 +335,7 @@ export function OnboardingPanel() {
         >
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-foreground" />
           <span className="text-label font-medium uppercase tracking-wider">
-            Getting started
+            开始使用
           </span>
           <span className="text-label text-muted-foreground">{summary}</span>
           <span className="text-label text-muted-foreground">{expanded ? "▲" : "▼"}</span>
@@ -349,7 +349,7 @@ export function OnboardingPanel() {
           }}
           className="text-label uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
         >
-          dismiss
+          关闭
         </button>
       </div>
 
@@ -357,10 +357,10 @@ export function OnboardingPanel() {
         <div className="border-t border-border px-4 py-4 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-label uppercase tracking-wider text-muted-foreground">
-              Setup checklist
+              设置清单
             </div>
             <div className="text-label text-muted-foreground">
-              {completedCount} of {steps.length} complete
+              {completedCount} / {steps.length} 已完成
             </div>
           </div>
 
@@ -374,10 +374,10 @@ export function OnboardingPanel() {
                     )}
                     <div className="space-y-1.5 text-body text-muted-foreground">
                       <Step number={1}>
-                        Run <InlineCode>gh auth login</InlineCode> on this machine, set <InlineCode>GITHUB_TOKEN</InlineCode>, or add a saved token in <Link href="/settings" className="underline underline-offset-2">settings</Link>.
+                        运行 <InlineCode>gh auth login</InlineCode> ，或在本机设置 <InlineCode>GITHUB_TOKEN</InlineCode>，或在此处添加 Token： <Link href="/settings" className="underline underline-offset-2">设置</Link>。
                       </Step>
                       <Step number={2}>
-                        Prefer the built-in token list if you want the app to remember it. For fine-grained PATs, give the watched repos the GitHub permissions PatchDeck uses: Metadata read, Contents read/write if you push, Issues read/write, Pull requests read/write, and Checks read.
+                        如需保存凭据，可使用内置 Token 列表。细粒度 PAT 需要为目标仓库授予以下权限：元数据读取、内容读写（如需推送）、议题读写、拉取请求读写和检查读取。
                       </Step>
                     </div>
                   </div>
@@ -385,7 +385,7 @@ export function OnboardingPanel() {
 
                 {step.id === "repo" && !step.complete && (
                   <div className="pt-1 text-body text-muted-foreground">
-                    The left sidebar is the real entry point. Use <span className="text-foreground">Add</span> for a PR URL or <span className="text-foreground">Watch</span> for an <InlineCode>owner/repo</InlineCode> slug, then choose whether that watched repo should track only your PRs or your whole team.
+                    可从左侧栏开始。使用 <span className="text-foreground">添加</span> 填写 PR 链接，或使用 <span className="text-foreground">关注</span> 填写 <InlineCode>owner/repo</InlineCode> 仓库标识，然后选择仅跟踪自己的 PR 或整个团队的 PR。
                   </div>
                 )}
 
@@ -393,7 +393,7 @@ export function OnboardingPanel() {
                   <div className="space-y-2 pt-1">
                     <div className="space-y-2 border border-border bg-muted/40 px-3 py-2">
                       <p className="text-body text-muted-foreground">
-                        These are GitHub Actions that run on every PR and post review comments. PatchDeck reads those comments, decides which need code changes, and queues safe fixes. Pick whichever review tool fits your stack.
+                        这些 GitHub Actions 会在每个 PR 上运行并发表评审意见。PatchDeck 会读取意见、判断是否需要修改代码并安排修复。请选择适合项目的评审工具。
                       </p>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-label">
                         {REVIEW_PROVIDER_GUIDES.map((provider) => (
@@ -421,7 +421,7 @@ export function OnboardingPanel() {
                             {repoStatus.repo}
                           </a>
                           <p className="text-label text-muted-foreground">
-                            No reviewer Action installed on this repo yet.
+                            此仓库尚未安装代码评审工作流。
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -437,7 +437,7 @@ export function OnboardingPanel() {
                               disabled={installWorkflowMutation.isPending || globalDrainMode}
                               className="border border-border px-2 py-1 text-label uppercase tracking-wider transition-colors hover:bg-foreground hover:text-background disabled:opacity-40"
                             >
-                              {globalDrainMode ? "Paused" : isPending ? "Adding…" : `Add ${REVIEW_TOOL_LABELS[tool]} Action`}
+                              {globalDrainMode ? "已暂停" : isPending ? "正在添加…" : `添加 ${REVIEW_TOOL_LABELS[tool]} 工作流`}
                             </button>
                           );
                         })}
@@ -451,7 +451,7 @@ export function OnboardingPanel() {
                   <div className="space-y-2 pt-1">
                     <div className="space-y-2 border border-border bg-muted/40 px-3 py-2">
                       <p className="text-body text-muted-foreground">
-                        These are GitHub Actions that run on every PR and post review comments. PatchDeck reads those comments, decides which need code changes, and queues safe fixes. Pick whichever review tool fits your stack.
+                        这些 GitHub Actions 会在每个 PR 上运行并发表评审意见。PatchDeck 会读取意见、判断是否需要修改代码并安排修复。请选择适合项目的评审工具。
                       </p>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-label">
                         {REVIEW_PROVIDER_GUIDES.map((provider) => (
@@ -491,7 +491,7 @@ export function OnboardingPanel() {
           {inaccessibleRepos.length > 0 && !isTransientGitHubWarning(displayStatus.githubError) && (
             <div className="space-y-3 border border-destructive/30 bg-destructive/5 px-3 py-3">
               <div className="text-label font-medium uppercase tracking-wider text-destructive">
-                Repository access issues
+                仓库访问问题
               </div>
               <div className="space-y-2">
                 {inaccessibleRepos.map((repoStatus) => (
@@ -507,7 +507,7 @@ export function OnboardingPanel() {
                       </a>
                     </div>
                     <p className="text-body text-destructive">
-                      Cannot access this repository: {repoStatus.error ?? "unknown error"}
+                      无法访问此仓库： {repoStatus.error ?? "未知错误"}
                     </p>
                   </div>
                 ))}

@@ -24,7 +24,7 @@ test("getActivityIdleReason explains drain mode before generic idleness", () => 
     drainReason: "operator paused",
     trackedCount: 12,
     trackedLabel: "PR",
-  }), "Automation is paused by drain mode: operator paused");
+  }), "排空模式已暂停自动化：operator paused");
 });
 
 test("getActivityIdleReason explains rate limits with reset time", () => {
@@ -34,8 +34,8 @@ test("getActivityIdleReason explains rate limits with reset time", () => {
     githubRateLimitResetAt: "2026-05-17T16:30:00.000Z",
   });
 
-  assert.match(reason ?? "", /GitHub is rate-limited/);
-  assert.match(reason ?? "", /resume after/);
+  assert.match(reason ?? "", /GitHub 请求已限流/);
+  assert.match(reason ?? "", /后继续处理/);
 });
 
 test("getActivityIdleReason explains eligible tracked work", () => {
@@ -44,7 +44,7 @@ test("getActivityIdleReason explains eligible tracked work", () => {
     trackedCount: 20,
     eligibleCount: 3,
     trackedLabel: "PR",
-  }), "No jobs are running. 3 PRs can be queued when the next safe work slot opens.");
+  }), "当前没有运行中的任务，3 个 PR 可在有空闲执行名额时加入队列。");
 });
 
 test("getActivityIdleReason explains tracked work with no known eligible items", () => {
@@ -53,5 +53,5 @@ test("getActivityIdleReason explains tracked work with no known eligible items",
     trackedCount: 20,
     eligibleCount: 0,
     trackedLabel: "issue",
-  }), "No jobs are running. 20 issues are tracked, but none are eligible right now or the watcher is waiting for the next sync pass.");
+  }), "当前没有运行中的任务，已跟踪 20 个议题，但暂无符合条件的任务，或正在等待下次同步。");
 });

@@ -270,10 +270,10 @@ test("full app QA route matrix is wired through the hash router", async () => {
     { label: "logs", path: "/logs", component: "LogsRoute" },
     { label: "not found fallback", component: "NotFoundRoute" },
   ]);
-  assertHasExpression(sourceFile, "route runtime crash containment", /<PageErrorBoundary\s+pageName="Pull requests">[\s\S]*<PRs\s*\/>[\s\S]*<\/PageErrorBoundary>/);
-  assertHasExpression(sourceFile, "issues runtime crash containment", /<PageErrorBoundary\s+pageName="Issues">[\s\S]*<Issues\s*\/>[\s\S]*<\/PageErrorBoundary>/);
-  assertHasExpression(sourceFile, "deployments runtime crash containment", /<PageErrorBoundary\s+pageName="Deployments">[\s\S]*<Deployments\s*\/>[\s\S]*<\/PageErrorBoundary>/);
-  assertHasExpression(sourceFile, "not found runtime crash containment", /<PageErrorBoundary\s+pageName="Not found">[\s\S]*<NotFound\s*\/>[\s\S]*<\/PageErrorBoundary>/);
+  assertHasExpression(sourceFile, "route runtime crash containment", /<PageErrorBoundary\s+pageName="拉取请求">[\s\S]*<PRs\s*\/>[\s\S]*<\/PageErrorBoundary>/);
+  assertHasExpression(sourceFile, "issues runtime crash containment", /<PageErrorBoundary\s+pageName="议题">[\s\S]*<Issues\s*\/>[\s\S]*<\/PageErrorBoundary>/);
+  assertHasExpression(sourceFile, "deployments runtime crash containment", /<PageErrorBoundary\s+pageName="部署">[\s\S]*<Deployments\s*\/>[\s\S]*<\/PageErrorBoundary>/);
+  assertHasExpression(sourceFile, "not found runtime crash containment", /<PageErrorBoundary\s+pageName="未找到">[\s\S]*<NotFound\s*\/>[\s\S]*<\/PageErrorBoundary>/);
   assertHasExpression(notFoundSourceFile, "shared header", /<AppHeader\s+active="dashboard"/);
   assertHasStringValue(notFoundSourceFile, "not found panel test id", "not-found-panel");
 });
@@ -347,21 +347,21 @@ test("dashboard keeps the QA-tested PR, repo, feedback, and side-panel workflows
   assertHasExpression(sourceFile, "queue status index", /\bqueueStatusById\b/);
   assertHasExpression(sourceFile, "PR number search helper", /\bmatchesNumberSearch\b/);
   assertHasExpression(sourceFile, "PR ready merge rail", /isPRSummaryReadyToMerge\(pr\)\s*\?\s*["']success["']\s*:\s*prStatusTone\(pr\)/);
-  assertHasStringValue(sourceFile, "PR number search placeholder", "Search #");
+  assertHasStringValue(sourceFile, "PR number search placeholder", "搜索编号");
   assertHasExpression(sourceFile, "issue-linked PR index", /\bbuildIssueLinkedPRIndex\b/);
-  assertHasStringValue(sourceFile, "linked issues tab label", /Linked Issues \(/);
+  assertHasStringValue(sourceFile, "linked issues tab label", /关联议题（/);
   assertHasTestId(globalActivitySourceFile, "global activity panel", "global-activity-panel");
   assertHasTestId(globalActivitySourceFile, "global activity row", "global-activity-row");
-  assertHasStringValue(globalActivitySourceFile, "global activity heading", "Automation");
-  assertHasStringValue(globalActivitySourceFile, "global activity empty state", "No automation running or queued.");
-  assertHasStringValue(sourceFile, "dashboard sync label", "sync");
-  assertHasStringValue(sourceFile, "drain mode action label", "Paused by drain mode");
-  assertHasStringValue(sourceFile, "blocked manual copy", "Manual runs are blocked while global automation is paused.");
-  assertHasStringValue(sourceFile, "drained PR copy", "Background and manual runs are paused by drain mode.");
-  assertHasStringValue(sourceFile, "drained ask copy", "Ask Agent is paused by drain mode.");
-  assertHasStringValue(dashboardErrorsSourceFile, "dashboard errors heading", "Needs attention");
-  assertHasStringValue(dashboardErrorsSourceFile, "dashboard errors roll-up label", "Roll up");
-  assertHasStringValue(dashboardErrorsSourceFile, "dashboard errors expand label", "Expand");
+  assertHasStringValue(globalActivitySourceFile, "global activity heading", "自动化");
+  assertHasStringValue(globalActivitySourceFile, "global activity empty state", "没有运行中或排队中的自动任务。");
+  assertHasStringValue(sourceFile, "dashboard sync label", "同步");
+  assertHasStringValue(sourceFile, "drain mode action label", "已因排空模式暂停");
+  assertHasStringValue(sourceFile, "blocked manual copy", "全局自动化暂停期间，手动任务也不可运行。");
+  assertHasStringValue(sourceFile, "drained PR copy", "排空模式已暂停后台和手动任务。");
+  assertHasStringValue(sourceFile, "drained ask copy", "排空模式已暂停代理问答。");
+  assertHasStringValue(dashboardErrorsSourceFile, "dashboard errors heading", "需要关注");
+  assertHasStringValue(dashboardErrorsSourceFile, "dashboard errors roll-up label", "收起");
+  assertHasStringValue(dashboardErrorsSourceFile, "dashboard errors expand label", "展开");
   assertHasExpression(sourceFile, "dashboard drain state", /\bglobalDrainMode\b/);
   assertHasExpression(sourceFile, "dashboard issues drain guard", /enabled: runtimeState !== undefined && !globalDrainMode/);
   assertHasExpression(sourceFile, "dashboard active error count", /\bactiveErrorCount\b/);
@@ -428,7 +428,7 @@ test("issues page keeps the QA-tested issue monitor and work surface wired", asy
   assertHasExpression(sourceFile, "issue work logs", /\bissueLogs\b/);
   assertHasExpression(sourceFile, "issue body html rendering", /\bbodyHtml\b/);
   assertHasExpression(sourceFile, "issue markdown class", /issue-markdown/);
-  assertHasExpression(sourceFile, "issue author line", /by\s+\{formatGitHubUsername\(issue\.author\)\}/);
+  assertHasExpression(sourceFile, "issue author line", /作者\s+\{formatGitHubUsername\(issue\.author\)\}/);
   assertHasExpression(sourceFile, "issue log metadata chips", /\bgetLogMetadataEntries\b/);
   assertHasExpression(sourceFile, "issue work pr field", /\bworkPrUrl\b/);
   assertHasExpression(sourceFile, "issue work stage field", /\bworkStage\b/);
@@ -452,13 +452,13 @@ test("issues page keeps the QA-tested issue monitor and work surface wired", asy
   assertHasExpression(sourceFile, "issue filtered list", /\bfilteredIssues\b/);
   assertHasExpression(sourceFile, "issue pagination load more", /\bloadMoreIssues\b/);
   assertHasExpression(sourceFile, "issue loaded count", /\bloadedIssueCount\b/);
-  assertHasStringValue(sourceFile, "issue sync label", "sync");
-  assertHasStringValue(sourceFile, "issue queue work label", "Queue work");
-  assertHasStringValue(sourceFile, "manual issue pull label", "Pull issue");
-  assertHasStringValue(sourceFile, "manual PR pull label", "Pull PR");
-  assertHasStringValue(sourceFile, "issue load more label", "Load more");
-  assertHasStringValue(sourceFile, "issue number search placeholder", "Search #");
-  assertHasStringValue(sourceFile, "issue body label", "Issue body");
+  assertHasStringValue(sourceFile, "issue sync label", "同步");
+  assertHasStringValue(sourceFile, "issue queue work label", "加入处理队列");
+  assertHasStringValue(sourceFile, "manual issue pull label", "拉取议题");
+  assertHasStringValue(sourceFile, "manual PR pull label", "拉取 PR");
+  assertHasStringValue(sourceFile, "issue load more label", "加载更多");
+  assertHasStringValue(sourceFile, "issue number search placeholder", "搜索编号");
+  assertHasStringValue(sourceFile, "issue body label", "议题正文");
 });
 
 test("dashboard finds latest target activity without sorting the full activity list", async () => {
@@ -522,8 +522,8 @@ test("settings keeps the QA-tested configuration, token, and runtime controls wi
   assertHasJsxTag(sourceFile, "repo tracking scope control", "WatchScopeControl");
   assertHasJsxTag(sourceFile, "issue work mode control", "IssueWorkModeControl");
   assertHasExpression(sourceFile, "settings TOC scroll action", /\bscrollToSettingsSection\b/);
-  assertHasStringValue(sourceFile, "setting default reset button", "Default");
-  assertHasExpression(sourceFile, "setting default reset action", /Reset \$\{label\} to default/);
+  assertHasStringValue(sourceFile, "setting default reset button", "默认");
+  assertHasExpression(sourceFile, "setting default reset action", /将\$\{label\}恢复为默认值/);
   assert.doesNotMatch(
     sourceFile.getFullText(),
     /href=\{?\s*(?:`#|"#|'#)/,
@@ -540,7 +540,7 @@ test("settings keeps the QA-tested configuration, token, and runtime controls wi
   assertHasExpression(sourceFile, "ordered GitHub tokens", /\bgithubTokens\b/);
   assertHasTestId(sourceFile, "GitHub auth status", "github-auth-status");
   assertHasExpression(sourceFile, "repo sync drain guard", /disabled=\{syncReposMutation\.isPending \|\| globalDrainMode\}/);
-  assertHasStringValue(sourceFile, "repo sync button label", "Sync");
+  assertHasStringValue(sourceFile, "repo sync button label", "同步");
 });
 
 test("logs route keeps the QA-tested filtering, streaming, copy, and download surface wired", async () => {
@@ -551,8 +551,8 @@ test("logs route keeps the QA-tested filtering, streaming, copy, and download su
   assertHasJsxAttribute(sourceFile, "id", "level filter", "logs-level");
   assertHasJsxAttribute(sourceFile, "id", "source filter", "logs-source");
   assertHasJsxAttribute(sourceFile, "type", "search input", "search");
-  assertHasStringValue(sourceFile, "follow tail toggle", "follow tail");
-  assertHasStringValue(sourceFile, "clear view action", "clear view");
+  assertHasStringValue(sourceFile, "follow tail toggle", "实时跟踪");
+  assertHasStringValue(sourceFile, "clear view action", "清空视图");
   assertHasExpression(sourceFile, "copy action", /navigator\.clipboard\.writeText/);
   assertHasExpression(sourceFile, "download action", /patchdeck-logs-/);
 });
@@ -568,12 +568,12 @@ test("releases route keeps the QA-tested list, expand, copy, retry, and GitHub l
   assertHasJsxTag(releases.sourceFile, "release notes copy", "CopyButton");
   assertHasJsxTag(releases.sourceFile, "orphan github release card", "GitHubReleaseCard");
   assertContainsAll(releases.sourceFile, [
-    ["github link button", "Open on GitHub"],
-    ["sync github button tooltip", "Sync from GitHub"],
-    ["orphan section header", "Published outside the pipeline"],
-    ["release readiness preview", "Release preview"],
-    ["empty release state", "No release activity yet."],
-    ["watched repositories sidebar", "Watched repositories"],
+    ["github link button", "在 GitHub 上打开"],
+    ["sync github button tooltip", "从 GitHub 同步"],
+    ["orphan section header", "流水线外发布"],
+    ["release readiness preview", "发布预览"],
+    ["empty release state", "暂无发布活动。"],
+    ["watched repositories sidebar", "关注的仓库"],
   ]);
   assertHasExpression(releases.sourceFile, "github releases cache window", /staleTime:\s*5\s*\*\s*60\s*\*\s*1000/);
   assertHasTestId(releases.sourceFile, "release readiness preview panel", "release-readiness-preview");
@@ -588,9 +588,9 @@ test("deployments route keeps deployment healing visibility wired", async () => 
   assertHasQueryKey(sourceFile, "deployment healing sessions query", "/api/deployment-healing-sessions");
   assertHasTestId(sourceFile, "deployment session card", "deployment-healing-session-card");
   assertHasTestId(sourceFile, "deployment empty state", "deployment-healing-empty-state");
-  assertHasStringValue(sourceFile, "follow-up PR label", "Follow-up PR");
+  assertHasStringValue(sourceFile, "follow-up PR label", "后续修复 PR");
   assertHasExpression(sourceFile, "deployment log field", /\bdeploymentLog\b/);
-  assertHasStringValue(settingsSourceFile, "deployment healing toggle", "Automatic deployment healing");
+  assertHasStringValue(settingsSourceFile, "deployment healing toggle", "部署自动修复");
   assertHasExpression(settingsSourceFile, "deployment healing config key", /\bautoHealDeployments\b/);
   assertHasStringValue(headerSourceFile, "deployments nav item", "/deployments");
 });
@@ -613,7 +613,7 @@ test("activity menu keeps the QA-tested trigger, drain note, and poll footer wir
   assertHasTestId(sourceFile, "activity drain note", "activity-drain-note");
   assertHasTestId(sourceFile, "activity idle reason", "activity-idle-reason");
   assertHasTestId(sourceFile, "activity poll footer", "activity-poll-footer");
-  assertHasStringValue(sourceFile, "queued drain copy", "Queued automation is paused until drain mode is disabled.");
+  assertHasStringValue(sourceFile, "queued drain copy", "排队中的自动任务已暂停，关闭排空模式后继续。");
 });
 
 test("mobile layout primitives keep narrow viewport constraints wired", async () => {

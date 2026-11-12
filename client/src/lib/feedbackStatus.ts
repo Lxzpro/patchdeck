@@ -1,7 +1,16 @@
 import type { FeedbackItem, FeedbackStatus } from "@shared/schema";
 
 export function formatFeedbackStatusLabel(status: FeedbackStatus): string {
-  return status.replace("_", " ").toUpperCase();
+  return {
+    pending: "待处理",
+    queued: "排队中",
+    in_progress: "处理中",
+    resolved: "已解决",
+    rejected: "已拒绝",
+    flagged: "待人工评估",
+    failed: "失败",
+    warning: "警告",
+  }[status];
 }
 
 export function getFeedbackStatusBadgeClass(status: FeedbackStatus): string {

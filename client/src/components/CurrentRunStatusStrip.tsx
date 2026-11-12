@@ -1,3 +1,4 @@
+import { formatActivityLabel } from "@/lib/activityDisplay";
 import { Bot, CheckCircle2, CircleDashed, Loader2, XCircle } from "lucide-react";
 import type { CurrentRunStatus } from "@shared/schema";
 import { formatCurrentRunStatus } from "@/lib/statusCopy";
@@ -9,7 +10,7 @@ type CurrentRunStatusStripProps = {
 
 function formatRunTime(value: string | null): string | null {
   if (!value) return null;
-  return new Date(value).toLocaleTimeString("en-US", { hour12: false });
+  return new Date(value).toLocaleTimeString("zh-CN", { hour12: false });
 }
 
 function statusClass(status: CurrentRunStatus["status"]): string {
@@ -41,7 +42,7 @@ export function CurrentRunStatusStrip({ run, testId }: CurrentRunStatusStripProp
         <StatusIcon status={run.status} />
         {formatCurrentRunStatus(run.status)}
       </span>
-      <span className="font-medium text-foreground">{run.label}</span>
+      <span className="font-medium text-foreground">{formatActivityLabel(run.label)}</span>
       {run.phase && <span className="font-mono text-muted-foreground">{run.phase}</span>}
       {run.agent && (
         <span className="inline-flex items-center gap-1 font-mono text-muted-foreground">
@@ -49,7 +50,7 @@ export function CurrentRunStatusStrip({ run, testId }: CurrentRunStatusStripProp
           {run.agent}
         </span>
       )}
-      {updatedAt && <span className="font-mono text-muted-foreground">updated {updatedAt}</span>}
+      {updatedAt && <span className="font-mono text-muted-foreground">更新于 {updatedAt}</span>}
       {detail && <span className="min-w-0 flex-1 truncate text-muted-foreground">{detail}</span>}
     </div>
   );

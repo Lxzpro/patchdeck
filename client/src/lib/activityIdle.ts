@@ -16,11 +16,12 @@ function formatResetTime(resetAt: string | null | undefined): string | null {
   if (!resetAt) return null;
   const date = new Date(resetAt);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleTimeString("en-US");
+  return date.toLocaleTimeString("zh-CN");
 }
 
 function pluralize(count: number, label: string): string {
-  return `${count} ${label}${count === 1 ? "" : "s"}`;
+  const labels: Record<string, string> = { item: "项任务", PR: "个 PR", issue: "个议题" };
+  return `${count} ${labels[label] ?? label}`;
 }
 
 export function getActivityIdleReason(input: ActivityIdleReasonInput): string | null {
@@ -30,19 +31,19 @@ export function getActivityIdleReason(input: ActivityIdleReasonInput): string | 
 
   if (input.drainMode) {
     return input.drainReason
-      ? `Automation is paused by drain mode: ${input.drainReason}`
-      : "Automation is paused by drain mode.";
+      ? `排空模式已暂停自动化：${input.drainReason}`
+      : "排空模式已暂停自动化。";
   }
 
   if (input.githubRateLimited) {
     const resetTime = formatResetTime(input.githubRateLimitResetAt);
     return resetTime
-      ? `GitHub is rate-limited. Work will resume after ${resetTime}.`
-      : "GitHub is rate-limited. Work will resume when the limit resets.";
+      ? `GitHub 请求已限流，将于 ${resetTime} 后继续处理。`
+      : "GitHub 请求已限流，额度恢复后将继续处理。";
   }
 
   if (input.autoEnabled === false) {
-    return "Automation is set to manual mode.";
+    return "自动化已设为手动模式。";
   }
 
   const trackedCount = input.trackedCount ?? 0;
@@ -50,12 +51,12 @@ export function getActivityIdleReason(input: ActivityIdleReasonInput): string | 
   const eligibleCount = input.eligibleCount ?? 0;
 
   if (eligibleCount > 0) {
-    return `No jobs are running. ${pluralize(eligibleCount, trackedLabel)} can be queued when the next safe work slot opens.`;
+    return `当前没有运行中的任务，${pluralize(eligibleCount, trackedLabel)} 可在有空闲执行名额时加入队列。`;
   }
 
   if (trackedCount > 0) {
-    return `No jobs are running. ${pluralize(trackedCount, trackedLabel)} are tracked, but none are eligible right now or the watcher is waiting for the next sync pass.`;
+    return `当前没有运行中的任务，已跟踪 ${pluralize(trackedCount, trackedLabel)}，但暂无符合条件的任务，或正在等待下次同步。`;
   }
 
-  return "No tracked work yet.";
+  return "尚未跟踪任何任务。";
 }

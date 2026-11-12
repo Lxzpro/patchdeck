@@ -7,9 +7,9 @@ type Mode = "system" | "light" | "dark";
 const ORDER: Mode[] = ["system", "light", "dark"];
 
 const LABELS: Record<Mode, string> = {
-  system: "Match system",
-  light: "Light",
-  dark: "Dark",
+  system: "跟随系统",
+  light: "浅色",
+  dark: "深色",
 };
 
 export function ThemeToggle() {
@@ -23,7 +23,7 @@ export function ThemeToggle() {
   const current: Mode = (theme as Mode | undefined) ?? "system";
   const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
   const showDark = mounted && (current === "dark" || (current === "system" && resolvedTheme === "dark"));
-  const ariaLabel = mounted ? `Theme: ${LABELS[current]}. Click for ${LABELS[next]}.` : "Toggle theme";
+  const ariaLabel = mounted ? `当前主题：${LABELS[current]}，点击切换为${LABELS[next]}。` : "切换主题";
 
   return (
     <button

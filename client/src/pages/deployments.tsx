@@ -1,3 +1,4 @@
+import { formatStatusLabel } from "@/lib/displayLabels";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { DeploymentHealingSession, DeploymentHealingState } from "@shared/schema";
@@ -10,7 +11,7 @@ function formatDateTime(value: string | null) {
   if (!value) return "never";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  return date.toLocaleString("zh-CN");
 }
 
 function stateClassName(state: DeploymentHealingState) {
@@ -40,7 +41,7 @@ function DeploymentSessionCard({ session }: { session: DeploymentHealingSession 
               {session.platform}
             </span>
             <span className={`rounded-md border px-1.5 py-0.5 text-label uppercase tracking-wider ${stateClassName(session.state)}`}>
-              {session.state.replace("_", " ")}
+              {formatStatusLabel(session.state)}
             </span>
           </div>
           <a
@@ -53,33 +54,33 @@ function DeploymentSessionCard({ session }: { session: DeploymentHealingSession 
           </a>
         </div>
         <div className="text-right font-mono text-label text-muted-foreground">
-          <div>updated {formatDateTime(session.updatedAt)}</div>
-          <div>created {formatDateTime(session.createdAt)}</div>
+          <div>更新于 {formatDateTime(session.updatedAt)}</div>
+          <div>创建于 {formatDateTime(session.createdAt)}</div>
         </div>
       </div>
 
       <dl className="mt-4 grid gap-3 text-body sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <dt className="text-label uppercase tracking-wider text-muted-foreground">Deployment</dt>
-          <dd className="mt-1 font-mono text-foreground">{session.deploymentId ?? "not captured"}</dd>
+          <dt className="text-label uppercase tracking-wider text-muted-foreground">部署</dt>
+          <dd className="mt-1 font-mono text-foreground">{session.deploymentId ?? "未记录"}</dd>
         </div>
         <div>
-          <dt className="text-label uppercase tracking-wider text-muted-foreground">Merge SHA</dt>
+          <dt className="text-label uppercase tracking-wider text-muted-foreground">合并提交 SHA</dt>
           <dd className="mt-1 truncate font-mono text-foreground" title={session.mergeSha}>{session.mergeSha}</dd>
         </div>
         <div>
-          <dt className="text-label uppercase tracking-wider text-muted-foreground">Fix branch</dt>
-          <dd className="mt-1 truncate font-mono text-foreground">{session.fixBranch ?? "none"}</dd>
+          <dt className="text-label uppercase tracking-wider text-muted-foreground">修复分支</dt>
+          <dd className="mt-1 truncate font-mono text-foreground">{session.fixBranch ?? "无"}</dd>
         </div>
         <div>
-          <dt className="text-label uppercase tracking-wider text-muted-foreground">Follow-up PR</dt>
+          <dt className="text-label uppercase tracking-wider text-muted-foreground">后续修复 PR</dt>
           <dd className="mt-1">
             {session.fixPrUrl ? (
               <a href={session.fixPrUrl} target="_blank" rel="noreferrer" className="font-mono text-primary hover:underline">
                 #{session.fixPrNumber}
               </a>
             ) : (
-              <span className="text-muted-foreground">none</span>
+              <span className="text-muted-foreground">无</span>
             )}
           </dd>
         </div>
@@ -125,7 +126,7 @@ export default function Deployments() {
         active="deployments"
         status={sessions.length > 0 ? (
           <span>
-            <span className="font-mono text-foreground">{activeCount}</span> active / <span className="font-mono text-foreground">{sessions.length}</span> total
+            <span className="font-mono text-foreground">{activeCount}</span> 进行中 / <span className="font-mono text-foreground">{sessions.length}</span> 总计
           </span>
         ) : null}
       />
@@ -133,7 +134,7 @@ export default function Deployments() {
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
         <aside className="flex max-h-[42vh] w-full shrink-0 flex-col overflow-hidden border-b border-border lg:max-h-none lg:w-72 lg:border-b-0 lg:border-r">
           <div className="border-b border-border px-4 py-2 text-label font-medium uppercase tracking-wider text-muted-foreground">
-            Deployment sessions
+            部署修复会话
           </div>
           <div className="flex-1 overflow-y-auto">
             <button
@@ -141,7 +142,7 @@ export default function Deployments() {
               onClick={() => setSelectedRepo(null)}
               className={`flex w-full items-center justify-between border-b border-border px-4 py-3 text-left text-body ${selectedRepo === null ? "bg-muted/30 text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <span>All repositories</span>
+              <span>所有仓库</span>
               <span className="font-mono text-label">{sessions.length}</span>
             </button>
             {repoList.map((repo) => (
@@ -161,20 +162,20 @@ export default function Deployments() {
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="text-title font-semibold tracking-tight">
-              {selectedRepo ?? "All deployment healing"}
+              {selectedRepo ?? "全部部署修复"}
             </h2>
             <span className="font-mono text-label text-muted-foreground">
-              {filteredSessions.length} session{filteredSessions.length === 1 ? "" : "s"}
+              {filteredSessions.length} 会话
             </span>
           </div>
 
           {isLoading && sessions.length === 0 ? (
-            <div className="rounded-md border border-border px-4 py-8 text-center text-body text-muted-foreground">Loading deployment sessions…</div>
+            <div className="rounded-md border border-border px-4 py-8 text-center text-body text-muted-foreground">正在加载部署修复会话…</div>
           ) : filteredSessions.length === 0 ? (
             <div className="rounded-md border border-border px-4 py-8 text-center" data-testid="deployment-healing-empty-state">
-              <p className="text-body text-muted-foreground">No deployment healing sessions yet.</p>
+              <p className="text-body text-muted-foreground">暂无部署修复会话。</p>
               <p className="mt-1 text-body text-muted-foreground">
-                Sessions appear after merged PRs are monitored for supported deployment failures.
+                监控已合并 PR 的部署时，发现受支持平台的部署失败后会创建会话。
               </p>
             </div>
           ) : (

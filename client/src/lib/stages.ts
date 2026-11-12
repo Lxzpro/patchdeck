@@ -2,12 +2,12 @@ import type { Issue, PR } from "@shared/schema";
 import type { Stage } from "@/components/detail/StageProgressBar";
 
 const ISSUE_PIPELINE: Array<{ key: NonNullable<Issue["workStage"]>; label: string }> = [
-  { key: "queued", label: "Queued" },
-  { key: "started", label: "Started" },
-  { key: "working", label: "Working" },
-  { key: "verifying", label: "Verifying" },
-  { key: "opening_pr", label: "Opening PR" },
-  { key: "completed", label: "Completed" },
+  { key: "queued", label: "排队中" },
+  { key: "started", label: "已启动" },
+  { key: "working", label: "处理中" },
+  { key: "verifying", label: "验证中" },
+  { key: "opening_pr", label: "正在创建 PR" },
+  { key: "completed", label: "已完成" },
 ];
 
 export function buildIssueStages(issue: Pick<Issue, "workStage" | "workStatus">): Stage[] {
@@ -39,11 +39,11 @@ export function buildIssueStages(issue: Pick<Issue, "workStage" | "workStatus">)
 }
 
 const PR_PIPELINE: Array<{ key: NonNullable<PR["prStage"]>; label: string }> = [
-  { key: "feedback_synced", label: "Feedback synced" },
-  { key: "triaged", label: "Triaged" },
-  { key: "applying", label: "Applying" },
-  { key: "tests", label: "Tests" },
-  { key: "done", label: "Done" },
+  { key: "feedback_synced", label: "反馈已同步" },
+  { key: "triaged", label: "已评估" },
+  { key: "applying", label: "应用修复" },
+  { key: "tests", label: "测试" },
+  { key: "done", label: "完成" },
 ];
 
 export function buildPRStages(pr: Pick<PR, "status" | "prStage">): Stage[] {
