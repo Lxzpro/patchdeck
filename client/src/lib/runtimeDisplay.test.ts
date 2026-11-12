@@ -14,31 +14,31 @@ const activeRuntimeState: RuntimeState = {
 
 test("getDrainStatusView shows loading before runtime state is available", () => {
   assert.deepEqual(getDrainStatusView(undefined, false), {
-    label: "loading...",
+    label: "正在加载…",
     className: "text-muted-foreground",
   });
 });
 
 test("getDrainStatusView shows an error when runtime state fails to load", () => {
   assert.deepEqual(getDrainStatusView(undefined, true), {
-    label: "unavailable",
+    label: "无法获取",
     className: "text-destructive",
   });
 });
 
 test("getDrainStatusView shows active and paused runtime states", () => {
   assert.deepEqual(getDrainStatusView(activeRuntimeState, false), {
-    label: "active",
+    label: "运行中",
     className: "text-muted-foreground",
   });
   assert.deepEqual(getDrainStatusView({ ...activeRuntimeState, drainMode: true }, false), {
-    label: "paused",
+    label: "已暂停",
     className: "text-destructive",
   });
 });
 
 test("getDrainActionLabel returns capitalized action labels", () => {
-  assert.equal(getDrainActionLabel(undefined), "Pause");
-  assert.equal(getDrainActionLabel(activeRuntimeState), "Pause");
-  assert.equal(getDrainActionLabel({ ...activeRuntimeState, drainMode: true }), "Resume");
+  assert.equal(getDrainActionLabel(undefined), "暂停");
+  assert.equal(getDrainActionLabel(activeRuntimeState), "暂停");
+  assert.equal(getDrainActionLabel({ ...activeRuntimeState, drainMode: true }), "恢复");
 });

@@ -10,20 +10,20 @@ export function getDrainStatusView(
   isError: boolean,
 ): DrainStatusView {
   if (runtimeState?.drainMode) {
-    return { label: "paused", className: "text-destructive" };
+    return { label: "已暂停", className: "text-destructive" };
   }
 
   if (runtimeState) {
-    return { label: "active", className: "text-muted-foreground" };
+    return { label: "运行中", className: "text-muted-foreground" };
   }
 
   if (isError) {
-    return { label: "unavailable", className: "text-destructive" };
+    return { label: "无法获取", className: "text-destructive" };
   }
 
-  return { label: "loading...", className: "text-muted-foreground" };
+  return { label: "正在加载…", className: "text-muted-foreground" };
 }
 
 export function getDrainActionLabel(runtimeState: RuntimeState | undefined): string {
-  return runtimeState?.drainMode ? "Resume" : "Pause";
+  return runtimeState?.drainMode ? "恢复" : "暂停";
 }

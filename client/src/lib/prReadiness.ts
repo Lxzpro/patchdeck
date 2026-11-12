@@ -53,53 +53,53 @@ export function buildPRReadinessChecks(
   return [
     {
       key: "work-state",
-      label: workStatus?.label === "running"
-        ? "Automation running"
+      label: workStatus?.label === "运行中"
+        ? "自动化运行中"
         : workStatus
-          ? "Automation queued"
-          : "Automation idle",
+          ? "自动化排队中"
+          : "自动化空闲",
       passed: !workActive,
       detail: workStatus
-        ? workStatus.detail ?? "A work run is queued."
-        : pr.status === "processing" ? "A work run is still active." : "No active work run.",
+        ? workStatus.detail ?? "处理任务已加入队列。"
+        : pr.status === "processing" ? "处理任务仍在运行。" : "没有运行中的处理任务。",
     },
     {
       key: "tests",
-      label: "Tests passing",
+      label: "测试通过",
       passed: pr.testsPassed !== false && isGitHubReadyToMerge(pr),
       detail: pr.testsPassed === true
-        ? "Latest test result passed."
+        ? "最新测试已通过。"
         : pr.testsPassed === false
-          ? "Latest test result failed."
+          ? "最新测试失败。"
           : pr.mergeableState === "clean"
-            ? "GitHub reports required checks are passing."
-            : "No test result synced yet.",
+            ? "GitHub 显示必需检查已通过。"
+            : "尚未同步测试结果。",
     },
     {
       key: "lint",
-      label: "Lint passing",
+      label: "代码检查通过",
       passed: pr.lintPassed !== false,
       detail: pr.lintPassed === true
-        ? "Latest lint result passed."
+        ? "最新代码检查已通过。"
         : pr.lintPassed === false
-          ? "Latest lint result failed."
-          : "No separate lint result synced yet.",
+          ? "最新代码检查失败。"
+          : "尚未同步独立的代码检查结果。",
     },
     {
       key: "comments",
-      label: "Comments resolved",
+      label: "反馈已处理",
       passed: feedbackResolved,
       detail: feedbackResolved
-        ? "All tracked review feedback is resolved or rejected."
-        : `${unresolvedCount} tracked feedback item${unresolvedCount === 1 ? "" : "s"} still need attention.`,
+        ? "所有跟踪的评审反馈均已解决或拒绝。"
+        : `仍有 ${unresolvedCount} 条反馈需要处理。`,
     },
     {
       key: "github",
-      label: "GitHub mergeable",
+      label: "GitHub 可合并状态",
       passed: isGitHubReadyToMerge(pr),
       detail: pr.mergeableState === "clean"
-        ? "GitHub reports this PR is ready to merge."
-        : `GitHub mergeable state is ${pr.mergeableState ?? "unknown"}.`,
+        ? "GitHub 显示此 PR 可以合并。"
+        : `GitHub 合并状态：${pr.mergeableState ?? "未知"}。`,
     },
   ];
 }

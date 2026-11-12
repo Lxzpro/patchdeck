@@ -37,8 +37,8 @@ function makeSession(overrides: Partial<HealingSession> = {}): HealingSession {
 }
 
 test("formatHealingSessionStateLabel returns a UI-ready label", () => {
-  assert.equal(formatHealingSessionStateLabel("awaiting_repair_slot"), "REPAIR QUEUED");
-  assert.equal(formatHealingSessionStateLabel("awaiting_ci"), "WAITING FOR CI");
+  assert.equal(formatHealingSessionStateLabel("awaiting_repair_slot"), "修复排队中");
+  assert.equal(formatHealingSessionStateLabel("awaiting_ci"), "等待 CI");
 });
 
 test("getHealingSessionBadgeClass returns destructive styling for blocked sessions", () => {
@@ -71,25 +71,25 @@ test("getHealingSessionTone maps terminal failure states to danger and healed to
 });
 
 test("formatHealingOperatorActionLabel returns title-cased action labels", () => {
-  assert.equal(formatHealingOperatorActionLabel("pause"), "Pause");
-  assert.equal(formatHealingOperatorActionLabel("cancel"), "Cancel");
+  assert.equal(formatHealingOperatorActionLabel("pause"), "暂停");
+  assert.equal(formatHealingOperatorActionLabel("cancel"), "取消");
 });
 
 test("summarizeHealingAttemptProgress describes queued first attempts", () => {
   assert.equal(
     summarizeHealingAttemptProgress(makeSession({ state: "awaiting_repair_slot", attemptCount: 0 })),
-    "Queued for attempt 1",
+    "第 1 次尝试已排队",
   );
 });
 
 test("summarizeHealingAttemptProgress describes active and verified attempt progress", () => {
   assert.equal(
     summarizeHealingAttemptProgress(makeSession({ state: "awaiting_ci", attemptCount: 2 })),
-    "Attempt 2 pushed, waiting on CI",
+    "第 2 次尝试已推送，等待 CI",
   );
   assert.equal(
     summarizeHealingAttemptProgress(makeSession({ state: "healed", attemptCount: 2 })),
-    "Healed after 2 attempts",
+    "尝试 2 次后已修复",
   );
 });
 
@@ -108,7 +108,7 @@ test("getHealingSessionReason prefers blocked and escalation reasons before fing
 test("getHealingSessionStatusHint describes waiting CI states", () => {
   assert.equal(
     getHealingSessionStatusHint("awaiting_ci"),
-    "A repair was pushed and the new head SHA is waiting for CI to settle.",
+    "修复已推送，正在等待新提交的 CI 结果。",
   );
 });
 
@@ -145,9 +145,9 @@ test("getHealingSessionView returns a compact dashboard-oriented summary", () =>
     }),
   );
 
-  assert.equal(view.stateLabel, "BLOCKED");
+  assert.equal(view.stateLabel, "已阻塞");
   assert.equal(view.tone, "danger");
-  assert.equal(view.attemptSummary, "1 attempt before blocking");
+  assert.equal(view.attemptSummary, "尝试 1 次后受阻");
   assert.equal(view.reasonSummary, "Missing secret");
-  assert.equal(view.actions[0]?.label, "Retry");
+  assert.equal(view.actions[0]?.label, "重试");
 });

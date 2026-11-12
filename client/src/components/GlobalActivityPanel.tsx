@@ -1,3 +1,4 @@
+import { formatStatusLabel } from "@/lib/displayLabels";
 import { Link } from "wouter";
 import type { ActivityItem, ActivitySnapshot } from "@shared/schema";
 import { QueueStatusBadge } from "@/components/QueueStatusBadge";
@@ -10,7 +11,7 @@ function formatClock(timestamp: string | null): string | null {
     return null;
   }
 
-  return new Date(timestamp).toLocaleTimeString("en-US", { hour12: false });
+  return new Date(timestamp).toLocaleTimeString("zh-CN", { hour12: false });
 }
 
 export function GlobalActivityPanel({
@@ -27,15 +28,15 @@ export function GlobalActivityPanel({
   return (
     <div className="shrink-0 border-b border-border px-3 py-2" data-testid="global-activity-panel">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">Automation</div>
+        <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">自动化</div>
         <div className="flex shrink-0 items-center gap-2 text-label uppercase tracking-wider text-muted-foreground">
-          <span><span className="font-mono text-foreground/80">{activities.inProgress.length}</span> running</span>
-          <span><span className="font-mono text-foreground/80">{activities.queued.length}</span> queued</span>
+          <span><span className="font-mono text-foreground/80">{activities.inProgress.length}</span> 运行中</span>
+          <span><span className="font-mono text-foreground/80">{activities.queued.length}</span> 排队中</span>
         </div>
       </div>
       {visibleActivities.length === 0 ? (
         <div className="mt-2 text-label leading-4 text-muted-foreground" data-testid="global-activity-idle-reason">
-          {idleReason ?? "No automation running or queued."}
+          {idleReason ?? "没有运行中或排队中的自动任务。"}
         </div>
       ) : (
         <div className="mt-2 space-y-1">
@@ -77,7 +78,7 @@ function GlobalActivityRow({
     >
       <div className="flex min-w-0 items-center gap-2">
         <span className={`shrink-0 rounded-md border px-1.5 py-0.5 text-label uppercase tracking-wider ${statusClass}`}>
-          {activity.status === "in_progress" ? "running" : activity.status}
+          {formatStatusLabel(activity.status)}
         </span>
         <span className="min-w-0 flex-1 truncate text-body text-foreground">{label}</span>
         {timeLabel && <span className="shrink-0 font-mono text-label text-muted-foreground">{timeLabel}</span>}

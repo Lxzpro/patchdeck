@@ -34,16 +34,16 @@ type GitHubRateLimitResourceState = {
 };
 
 const PRIMARY_NAV_ITEMS: Array<{ section: AppHeaderSection; label: string; href: string }> = [
-  { section: "dashboard", label: "Dashboard", href: "/" },
-  { section: "issues", label: "Issues", href: "/issues" },
-  { section: "prs", label: "PRs", href: "/prs" },
-  { section: "releases", label: "Releases", href: "/releases" },
-  { section: "deployments", label: "Deployments", href: "/deployments" },
+  { section: "dashboard", label: "总览", href: "/" },
+  { section: "issues", label: "议题", href: "/issues" },
+  { section: "prs", label: "PR", href: "/prs" },
+  { section: "releases", label: "发布", href: "/releases" },
+  { section: "deployments", label: "部署", href: "/deployments" },
 ];
 
 const SECONDARY_NAV_ITEMS: Array<{ section: AppHeaderSection; label: string; href: string }> = [
-  { section: "logs", label: "Logs", href: "/logs" },
-  { section: "settings", label: "Settings", href: "/settings" },
+  { section: "logs", label: "日志", href: "/logs" },
+  { section: "settings", label: "设置", href: "/settings" },
 ];
 
 function navLinkClass(selected: boolean) {
@@ -86,25 +86,25 @@ function describeAutoModeState(state: AutoModeChipState): { label: string; chipC
   switch (state) {
     case "paused":
       return {
-        label: "Paused",
+        label: "已暂停",
         chipClass: "border-warning-border bg-warning-muted text-warning-foreground hover:border-warning",
         dotClass: "bg-warning",
       };
     case "auto":
       return {
-        label: "Auto",
+        label: "自动",
         chipClass: "border-success-border bg-success-muted text-success-foreground hover:border-success",
         dotClass: "bg-success animate-pulse",
       };
     case "partial":
       return {
-        label: "Partial",
+        label: "部分自动",
         chipClass: "border-warning-border bg-warning-muted/60 text-warning-foreground hover:border-warning",
         dotClass: "bg-warning",
       };
     case "manual":
       return {
-        label: "Manual",
+        label: "手动",
         chipClass: "border-border bg-muted text-muted-foreground hover:border-foreground/30",
         dotClass: "bg-muted-foreground",
       };
@@ -165,25 +165,25 @@ function AutoModeButton() {
     onSuccess: (_data, variables) => {
       if (variables.enabled) {
         toast({
-          description: "Background sync paused. New automation runs are blocked.",
+          description: "后台同步已暂停，不再启动新的自动任务。",
           action: (
             <ToastAction
-              altText="Resume background sync"
+              altText="恢复后台同步"
               onClick={() => drainMutation.mutate({ enabled: false })}
             >
-              Undo
+              撤销
             </ToastAction>
           ),
         });
       } else {
-        toast({ description: "Background sync resumed." });
+        toast({ description: "后台同步已恢复。" });
       }
     },
     onError: (error, variables) => {
       const message = error instanceof Error ? error.message : String(error);
       toast({
         variant: "destructive",
-        description: `Failed to ${variables.enabled ? "pause" : "resume"} background sync: ${message}`,
+        description: `${variables.enabled ? "暂停" : "恢复"}后台同步失败：${message}`,
       });
     },
     onSettled: () => {
@@ -196,10 +196,10 @@ function AutoModeButton() {
   const drainPending = drainMutation.isPending;
 
   const tooltip = drainMode
-    ? "Automation paused via drain mode. Open to see status."
-    : chipState === "auto" ? "Auto mode is on for PRs and Issues."
-      : chipState === "manual" ? "Auto mode is off. PRs and Issues only run on manual trigger."
-        : `Auto mode is partial — ${autoPrs ? "PRs" : "Issues"} only.`;
+    ? "排空模式已暂停自动化，点击查看状态。"
+    : chipState === "auto" ? "PR 和议题的自动模式已开启。"
+      : chipState === "manual" ? "自动模式已关闭，PR 和议题仅在手动触发时处理。"
+        : `部分自动模式：仅处理${autoPrs ? " PR" : "议题"}。`;
 
   return (
     <Popover>
@@ -218,7 +218,7 @@ function AutoModeButton() {
       <PopoverContent align="end" className="w-64 p-3">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-label font-medium uppercase tracking-wider text-muted-foreground">
-            Auto mode
+            自动模式
           </span>
           <span className={`inline-flex items-center gap-1.5 text-label font-medium uppercase tracking-wider ${drainMode ? "text-warning-foreground" : "text-muted-foreground"}`}>
             <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotClass}`} />
@@ -228,7 +228,7 @@ function AutoModeButton() {
 
         {drainMode && (
           <div className="mb-3 rounded-md border border-warning-border bg-warning-muted px-2 py-1.5 text-label text-warning-foreground">
-            Drain mode is active in Settings. Automation is paused regardless of these switches.
+            设置中已开启排空模式，以下开关不会恢复自动化。
           </div>
         )}
 
@@ -237,9 +237,9 @@ function AutoModeButton() {
             className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-1 py-1.5"
           >
             <label htmlFor="auto-mode-prs" className="flex min-w-0 cursor-pointer flex-col">
-              <span className="text-body font-medium text-foreground">Pull requests</span>
+              <span className="text-body font-medium text-foreground">拉取请求</span>
               <span className="text-label text-muted-foreground">
-                Watcher queues safe automation runs on watched PRs. Per-repo overrides live in Settings.
+                监控程序会为关注的 PR 安排自动任务，可在设置中按仓库调整。
               </span>
             </label>
             <Switch
@@ -255,9 +255,9 @@ function AutoModeButton() {
             className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-1 py-1.5"
           >
             <label htmlFor="auto-mode-issues" className="flex min-w-0 cursor-pointer flex-col">
-              <span className="text-body font-medium text-foreground">Issues</span>
+              <span className="text-body font-medium text-foreground">议题</span>
               <span className="text-label text-muted-foreground">
-                Agent auto-evaluates and works eligible issues.
+                代理会自动评估并处理符合条件的议题。
               </span>
             </label>
             <Switch
@@ -272,20 +272,20 @@ function AutoModeButton() {
 
         <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-2">
           <div className="min-w-0 flex-1 text-label uppercase tracking-wider text-muted-foreground">
-            Background sync
+            后台同步
           </div>
           <button
             type="button"
             onClick={() => drainMutation.mutate(
               drainMode
                 ? { enabled: false }
-                : { enabled: true, reason: "Paused from header auto mode menu" },
+                : { enabled: true, reason: "通过顶部自动模式菜单暂停" },
             )}
             disabled={drainPending}
             data-testid="auto-mode-drain-toggle"
             className="inline-flex min-h-[28px] items-center rounded-md border border-border px-2.5 py-1.5 text-label uppercase tracking-wider text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
           >
-            {drainPending ? "…" : drainMode ? "Resume all" : "Pause all"}
+            {drainPending ? "…" : drainMode ? "全部恢复" : "全部暂停"}
           </button>
         </div>
 
@@ -293,7 +293,7 @@ function AutoModeButton() {
           href="/settings"
           className="mt-3 inline-flex text-label uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
         >
-          Manage in settings →
+          前往设置管理 →
         </Link>
       </PopoverContent>
     </Popover>
@@ -323,7 +323,7 @@ function GitHubRateLimitNotice() {
   const activityRateLimitMessage = !explicitlyLimited && activities
     ? [...activities.failed, ...activities.warnings]
       .map((item) => ("lastError" in item ? item.lastError : item.message) ?? "")
-      .find((message) => message.toLowerCase().includes("rate limit")) ?? null
+      .find((message) => message.toLowerCase().includes("请求限流")) ?? null
     : null;
 
   if (!explicitlyLimited && !recentlyLimited && !coreBudgetTight && !activityRateLimitMessage) {
@@ -331,34 +331,34 @@ function GitHubRateLimitNotice() {
   }
 
   const resetTime = githubRateLimit?.resetAt
-    ? new Date(githubRateLimit.resetAt).toLocaleTimeString("en-US")
+    ? new Date(githubRateLimit.resetAt).toLocaleTimeString("zh-CN")
     : null;
 
   const label = explicitlyLimited
     ? resetTime
-      ? `GitHub rate limited until ${resetTime}`
-      : "GitHub rate limited"
+      ? `GitHub 请求已限流，将于 ${resetTime} 恢复`
+      : "GitHub 请求已限流"
     : coreBudgetFloor
-      ? "GitHub budget floor"
+      ? "GitHub 请求额度过低"
     : coreBudgetTight
-      ? "GitHub budget reserve"
+      ? "GitHub 请求额度不足"
     : recentlyLimited
-      ? "GitHub rate limit hit recently"
-    : "GitHub rate limit hit in recent activity";
+      ? "近期触发过 GitHub 限流"
+    : "近期活动触发了 GitHub 限流";
 
   const tooltip = explicitlyLimited
     ? resetTime
-      ? `GitHub rate limit active until ${resetTime}. Open settings for token configuration.`
-      : "GitHub rate limit active. Open settings for token configuration."
+      ? `GitHub 请求已限流，将于 ${resetTime} 恢复。请到设置中配置 Token。`
+      : "GitHub 请求已限流，请到设置中配置 Token。"
     : coreBudgetFloor
       ? coreBudget
-        ? `GitHub core budget is ${coreBudget.remaining}/${coreBudget.limit} (${coreBudget.percentRemaining}%). All GitHub jobs are waiting.`
-        : "GitHub core budget is below the hard floor. GitHub jobs are waiting."
+        ? `GitHub 核心请求额度剩余 ${coreBudget.remaining}/${coreBudget.limit}（${coreBudget.percentRemaining}%），所有 GitHub 任务正在等待。`
+        : "GitHub 核心请求额度低于最低保留值，相关任务正在等待。"
     : coreBudgetTight
       ? coreBudget
-        ? `GitHub core budget is ${coreBudget.remaining}/${coreBudget.limit} (${coreBudget.percentRemaining}%). Passive PR monitor jobs are deferring.`
-        : "GitHub core budget is in reserve. Passive PR monitor jobs are deferring."
-    : activityRateLimitMessage ?? "GitHub rate limit errors detected in recent activity. Open settings for token configuration.";
+        ? `GitHub 核心请求额度剩余 ${coreBudget.remaining}/${coreBudget.limit}（${coreBudget.percentRemaining}%），PR 后台监控任务已延后。`
+        : "GitHub 核心请求额度不足，PR 后台监控任务已延后。"
+    : activityRateLimitMessage ?? "近期活动出现 GitHub 限流错误，请到设置中配置 Token。";
 
   return (
     <Link
@@ -387,19 +387,19 @@ function AgentSpendNotice() {
     return null;
   }
 
-  const resetTime = new Date(spend.resetsAt).toLocaleTimeString("en-US", {
+  const resetTime = new Date(spend.resetsAt).toLocaleTimeString("zh-CN", {
     hour: "numeric",
     minute: "2-digit",
   });
   const nearingCeiling = spend.used >= Math.ceil(spend.max * 0.8);
 
   const label = spend.exhausted
-    ? `Agent runs paused until ${resetTime}`
-    : `${spend.used}/${spend.max} agent runs`;
+    ? `代理调用已暂停，将于 ${resetTime} 恢复`
+    : `代理调用 ${spend.used}/${spend.max} 次`;
 
   const tooltip = spend.exhausted
-    ? `The hourly ceiling of ${spend.max} agent runs is reached. Queued work resumes on its own around ${resetTime}.`
-    : `${spend.used} of ${spend.max} agent runs used in the last hour, across PR work, issues, healing, releases, and questions.`;
+    ? `已达到每小时 ${spend.max} 次代理调用上限，排队任务预计在 ${resetTime} 自动继续。`
+    : `过去一小时已调用代理 ${spend.used}/${spend.max} 次，包含 PR、议题、修复、发布和问答。`;
 
   const toneClass = spend.exhausted || nearingCeiling
     ? "border-warning-border bg-warning-muted text-warning-foreground hover:border-warning hover:bg-warning-muted/80"
@@ -432,12 +432,12 @@ export function AppHeader({
         <Link
           href="/"
           className="inline-flex shrink-0 items-center gap-2 rounded-md px-1 text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-          aria-label="PatchDeck dashboard"
+          aria-label="PatchDeck 总览"
         >
           <PatchdeckMark />
           <span className="text-title font-semibold tracking-tight">PatchDeck</span>
         </Link>
-        <nav aria-label="Primary" className="-mx-1 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1 lg:mx-0 lg:flex-initial lg:flex-wrap lg:overflow-visible lg:px-0 [&>*]:shrink-0 lg:[&>*]:shrink">
+        <nav aria-label="主导航" className="-mx-1 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1 lg:mx-0 lg:flex-initial lg:flex-wrap lg:overflow-visible lg:px-0 [&>*]:shrink-0 lg:[&>*]:shrink">
           {PRIMARY_NAV_ITEMS.map((item) => {
             const selected = active === item.section;
             return (
@@ -468,7 +468,7 @@ export function AppHeader({
             {actions}
           </div>
         ) : null}
-        <nav aria-label="Secondary" className="flex items-center gap-1 lg:flex-wrap [&>*]:shrink-0 lg:[&>*]:shrink">
+        <nav aria-label="辅助导航" className="flex items-center gap-1 lg:flex-wrap [&>*]:shrink-0 lg:[&>*]:shrink">
           {SECONDARY_NAV_ITEMS.map((item) => {
             const selected = active === item.section;
             return (

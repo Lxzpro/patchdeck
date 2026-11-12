@@ -10,7 +10,7 @@ test("getOnboardingPanelState starts with three pending steps and no repos", () 
   });
 
   assert.equal(state.hasIssues, true);
-  assert.equal(state.summary, "0 of 3 complete");
+  assert.equal(state.summary, "已完成 0/3 项");
   assert.equal(state.completedCount, 0);
   assert.deepEqual(
     state.steps.map((step) => ({ id: step.id, complete: step.complete })),
@@ -42,7 +42,7 @@ test("getOnboardingPanelState keeps the panel visible for inaccessible repos aft
   });
 
   assert.equal(state.hasIssues, true);
-  assert.equal(state.summary, "2 of 3 complete");
+  assert.equal(state.summary, "已完成 2/3 项");
   assert.deepEqual(state.inaccessibleRepos, [
     {
       repo: "octo/inaccessible",
@@ -68,7 +68,7 @@ test("getOnboardingPanelState keeps only workflow pending when repo access works
   });
 
   assert.equal(state.hasIssues, true);
-  assert.equal(state.summary, "2 of 3 complete");
+  assert.equal(state.summary, "已完成 2/3 项");
   assert.deepEqual(state.pendingSteps.map((step) => step.id), ["workflow"]);
   assert.deepEqual(state.reposMissingReview.map((repo) => repo.repo), ["octo/accessible"]);
 });
@@ -87,7 +87,7 @@ test("getOnboardingPanelState hides the panel when GitHub, repo access, and a re
   });
 
   assert.equal(state.hasIssues, false);
-  assert.equal(state.summary, "0 access issues");
+  assert.equal(state.summary, "0 个访问问题");
   assert.deepEqual(state.inaccessibleRepos, []);
   assert.equal(state.completedCount, 3);
   assert.deepEqual(state.reposWithReview.map((repo) => repo.repo), ["octo/accessible"]);
@@ -104,7 +104,7 @@ test("getOnboardingPanelState treats GitHub rate-limit gate as transient, not a 
   assert.equal(state.steps[0]?.id, "github");
   assert.equal(state.steps[0]?.complete, true);
   assert.equal(state.completedCount, 3);
-  assert.equal(state.summary, "0 access issues");
+  assert.equal(state.summary, "0 个访问问题");
   assert.equal(state.hasIssues, false);
   assert.deepEqual(state.pendingSteps, []);
 });
@@ -124,7 +124,7 @@ test("getOnboardingPanelState keeps repo/workflow steps complete when rate-limit
   });
 
   assert.equal(state.completedCount, 3);
-  assert.equal(state.summary, "0 access issues");
+  assert.equal(state.summary, "0 个访问问题");
   assert.equal(state.hasIssues, false);
   assert.deepEqual(state.pendingSteps, []);
 });

@@ -19,17 +19,17 @@ export type HealingSessionView = {
 };
 
 const HEALING_STATE_LABELS: Record<HealingSessionState, string> = {
-  idle: "IDLE",
-  triaging: "TRIAGING",
-  awaiting_repair_slot: "REPAIR QUEUED",
-  repairing: "REPAIRING",
-  awaiting_ci: "WAITING FOR CI",
-  verifying: "VERIFYING",
-  healed: "HEALED",
-  cooldown: "COOLDOWN",
-  blocked: "BLOCKED",
-  escalated: "ESCALATED",
-  superseded: "SUPERSEDED",
+  idle: "空闲",
+  triaging: "正在评估",
+  awaiting_repair_slot: "修复排队中",
+  repairing: "修复中",
+  awaiting_ci: "等待 CI",
+  verifying: "验证中",
+  healed: "已修复",
+  cooldown: "冷却中",
+  blocked: "已阻塞",
+  escalated: "需人工处理",
+  superseded: "已被替代",
 };
 
 const HEALING_BADGE_CLASSES: Record<HealingSessionState, string> = {
@@ -75,17 +75,17 @@ const HEALING_VIEW_TONES: Record<HealingSessionState, HealingViewTone> = {
 };
 
 const HEALING_STATUS_HINTS: Record<HealingSessionState, string> = {
-  idle: "Waiting for a new failing check on the current PR head.",
-  triaging: "Classifying the current failure set before deciding whether it is safe to repair.",
-  awaiting_repair_slot: "Ready for the next bounded repair attempt as soon as a slot is free.",
-  repairing: "A repair agent is actively working in an isolated worktree.",
-  awaiting_ci: "A repair was pushed and the new head SHA is waiting for CI to settle.",
-  verifying: "Comparing the latest check results against the previous failure fingerprint.",
-  healed: "The latest repair cycle converged to green and the session is complete.",
-  cooldown: "Cooling down before another retry is allowed.",
-  blocked: "Stopped because the failure looks external or unsafe to repair in-branch.",
-  escalated: "Stopped because retries were exhausted or the failure did not improve.",
-  superseded: "Replaced after the PR head moved to a newer commit.",
+  idle: "等待当前 PR 提交出现新的检查失败。",
+  triaging: "正在分析失败原因，判断是否可以安全修复。",
+  awaiting_repair_slot: "已准备好下一次修复，等待空闲执行名额。",
+  repairing: "修复代理正在隔离 worktree 中工作。",
+  awaiting_ci: "修复已推送，正在等待新提交的 CI 结果。",
+  verifying: "正在对照之前的故障特征验证最新检查结果。",
+  healed: "最新修复已通过检查，此会话已完成。",
+  cooldown: "正在冷却，稍后允许重试。",
+  blocked: "失败可能来自外部环境，或不适合在分支内修复，已停止处理。",
+  escalated: "重试次数已用尽或故障未改善，已停止处理。",
+  superseded: "PR 已更新到新的提交，此会话已被替代。",
 };
 
 export function formatHealingSessionStateLabel(state: HealingSessionState): string {
@@ -104,18 +104,18 @@ export function getHealingSessionOperatorActions(
 
 export function formatHealingOperatorActionLabel(action: HealingOperatorAction): string {
   if (action === "pause") {
-    return "Pause";
+    return "暂停";
   }
 
   if (action === "resume") {
-    return "Resume";
+    return "恢复";
   }
 
   if (action === "retry") {
-    return "Retry";
+    return "重试";
   }
 
-  return "Cancel";
+  return "取消";
 }
 
 export function getHealingSessionTone(state: HealingSessionState): HealingViewTone {
@@ -130,57 +130,56 @@ export function summarizeHealingAttemptProgress(
   session: Pick<HealingSession, "state" | "attemptCount">,
 ): string {
   const attempts = session.attemptCount;
-  const suffix = attempts === 1 ? "" : "s";
 
   if (attempts === 0) {
     if (session.state === "triaging") {
-      return "Preparing attempt 1";
+      return "正在准备第 1 次尝试";
     }
 
     if (session.state === "awaiting_repair_slot") {
-      return "Queued for attempt 1";
+      return "第 1 次尝试已排队";
     }
 
     if (session.state === "healed") {
-      return "Healed without a repair attempt";
+      return "无需修复即已恢复";
     }
 
-    return "No repair attempts yet";
+    return "尚未尝试修复";
   }
 
   if (session.state === "repairing") {
-    return `Attempt ${attempts} running`;
+    return `第 ${attempts} 次尝试正在运行`;
   }
 
   if (session.state === "awaiting_ci") {
-    return `Attempt ${attempts} pushed, waiting on CI`;
+    return `第 ${attempts} 次尝试已推送，等待 CI`;
   }
 
   if (session.state === "verifying") {
-    return `Attempt ${attempts} verifying`;
+    return `正在验证第 ${attempts} 次尝试`;
   }
 
   if (session.state === "healed") {
-    return `Healed after ${attempts} attempt${suffix}`;
+    return `尝试 ${attempts} 次后已修复`;
   }
 
   if (session.state === "blocked") {
-    return `${attempts} attempt${suffix} before blocking`;
+    return `尝试 ${attempts} 次后受阻`;
   }
 
   if (session.state === "escalated") {
-    return `${attempts} attempt${suffix} before escalation`;
+    return `尝试 ${attempts} 次后转人工处理`;
   }
 
   if (session.state === "cooldown") {
-    return `${attempts} attempt${suffix}, cooling down`;
+    return `已尝试 ${attempts} 次，冷却中`;
   }
 
   if (session.state === "superseded") {
-    return `${attempts} attempt${suffix}, superseded`;
+    return `已尝试 ${attempts} 次，已被替代`;
   }
 
-  return `${attempts} attempt${suffix} recorded`;
+  return `已记录 ${attempts} 次尝试`;
 }
 
 export function getHealingSessionReason(
@@ -232,7 +231,7 @@ export function getHealingSessionView(
     actions: getHealingSessionOperatorActions(session.state).map((action) => ({
       label: formatHealingOperatorActionLabel(action),
       available: true,
-      hint: `${formatHealingOperatorActionLabel(action)} controls are planned but not wired to the backend yet.`,
+      hint: `“${formatHealingOperatorActionLabel(action)}”功能尚未接入后端。`,
     })),
   };
 }

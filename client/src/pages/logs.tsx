@@ -1,3 +1,4 @@
+import { formatStatusLabel } from "@/lib/displayLabels";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -63,7 +64,7 @@ function parseSearchParams(search: string): {
 
 function formatTime(ms: number): string {
   const d = new Date(ms);
-  return d.toLocaleTimeString("en-US", {
+  return d.toLocaleTimeString("zh-CN", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -167,7 +168,7 @@ export default function Logs() {
       }
     };
     es.onerror = () => {
-      setError("Lost log stream connection — disable Follow tail and re-enable to retry");
+      setError("日志流连接已断开，请关闭再开启“实时跟踪”以重试。");
     };
     return () => {
       es.close();
@@ -246,27 +247,27 @@ export default function Logs() {
       <AppHeader active="logs" />
 
       <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-4 py-2 text-label">
-        <label htmlFor="logs-level" className="uppercase tracking-wider text-muted-foreground">level</label>
+        <label htmlFor="logs-level" className="uppercase tracking-wider text-muted-foreground">级别</label>
         <select
           id="logs-level"
           value={level}
           onChange={(e) => setLevel(e.target.value as Level | "")}
           className="cursor-pointer border border-border bg-transparent px-2 py-0.5 transition-colors focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          <option value="">all</option>
+          <option value="">全部</option>
           {LEVELS.map((l) => (
             <option key={l} value={l}>{l}</option>
           ))}
         </select>
 
-        <label htmlFor="logs-source" className="uppercase tracking-wider text-muted-foreground">source</label>
+        <label htmlFor="logs-source" className="uppercase tracking-wider text-muted-foreground">来源</label>
         <select
           id="logs-source"
           value={source}
           onChange={(e) => setSource(e.target.value)}
           className="cursor-pointer border border-border bg-transparent px-2 py-0.5 transition-colors focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          <option value="">all</option>
+          <option value="">全部</option>
           {sources.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -276,7 +277,7 @@ export default function Logs() {
           type="search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="search…"
+          placeholder="搜索日志…"
           className="min-w-[180px] flex-1 border border-border bg-transparent px-2 py-0.5 transition-colors focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
 
@@ -287,11 +288,11 @@ export default function Logs() {
             onChange={(e) => setFollow(e.target.checked)}
             className="cursor-pointer"
           />
-          follow tail
+          实时跟踪
         </label>
 
         <span className="ml-auto text-muted-foreground">
-          <span className="font-mono text-foreground/80">{filteredRecords.length}</span> of <span className="font-mono text-foreground/80">{records.length}</span>
+          <span className="font-mono text-foreground/80">{filteredRecords.length}</span> / <span className="font-mono text-foreground/80">{records.length}</span>
         </span>
 
         <button
@@ -299,7 +300,7 @@ export default function Logs() {
           onClick={onCopy}
           className="cursor-pointer rounded-md border border-border bg-transparent px-2.5 py-0.5 font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          copy
+          复制
         </button>
         <button
           type="button"
@@ -307,14 +308,14 @@ export default function Logs() {
           disabled={filteredRecords.length === 0}
           className="cursor-pointer rounded-md border border-border bg-transparent px-2.5 py-0.5 font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
         >
-          clear view
+          清空视图
         </button>
         <button
           type="button"
           onClick={onDownload}
           className="cursor-pointer rounded-md border border-border bg-transparent px-2.5 py-0.5 font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          download
+          下载
         </button>
       </div>
 
@@ -327,17 +328,17 @@ export default function Logs() {
       <div ref={containerRef} className="flex-1 overflow-y-auto p-3 font-mono text-label leading-relaxed">
         <div className="mb-3 border border-border/60">
           <div className="border-b border-border/60 px-2 py-1 text-label uppercase tracking-wider text-muted-foreground">
-            Activity
+            活动
           </div>
           <div className="max-h-56 overflow-y-auto">
             {activityItems.length === 0 ? (
-              <div className="px-2 py-2 text-label text-muted-foreground">No automation running or queued.</div>
+              <div className="px-2 py-2 text-label text-muted-foreground">没有运行中或排队中的自动任务。</div>
             ) : (
               activityItems.map((item) => (
                 <div key={item.id} className="border-b border-border/40 px-2 py-1.5 last:border-b-0">
                   <div className="flex items-center justify-between gap-2 text-label uppercase tracking-wider text-muted-foreground">
-                    <span>{item.kind.replace("_", " ")}</span>
-                    <span>{item.status.replace("_", " ")}</span>
+                    <span>{formatStatusLabel(item.kind)}</span>
+                    <span>{formatStatusLabel(item.status)}</span>
                   </div>
                   <div className="mt-0.5 text-label text-foreground/85">{item.label}</div>
                   {item.detail && <div className="text-label text-muted-foreground">{item.detail}</div>}
@@ -347,7 +348,7 @@ export default function Logs() {
           </div>
         </div>
         {filteredRecords.length === 0 ? (
-          <div className="text-center text-muted-foreground">No log records match the current filter.</div>
+          <div className="text-center text-muted-foreground">没有符合当前筛选条件的日志。</div>
         ) : (
           filteredRecords.map((r) => (
             <div key={r.seq} className="flex gap-2 whitespace-pre-wrap break-all">

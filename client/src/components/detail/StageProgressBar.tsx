@@ -24,7 +24,7 @@ export function StageProgressBar({
       role="progressbar"
       aria-valuenow={doneCount}
       aria-valuemax={stages.length}
-      aria-label={`${doneCount} of ${stages.length} stages complete`}
+      aria-label={`已完成 ${doneCount}/${stages.length} 个阶段`}
     >
       <div className="flex flex-1 items-center gap-1">
         {stages.map((stage) => {

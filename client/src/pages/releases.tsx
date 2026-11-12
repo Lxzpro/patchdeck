@@ -1,3 +1,4 @@
+import { formatStatusLabel } from "@/lib/displayLabels";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
@@ -27,10 +28,10 @@ function isTerminalStatus(status: ReleaseRunStatus): boolean {
 }
 
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "n/a";
+  if (!value) return "暂无";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "n/a";
-  return date.toLocaleString("en-US", {
+  if (Number.isNaN(date.getTime())) return "暂无";
+  return date.toLocaleString("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -40,7 +41,7 @@ function formatDateTime(value: string | null | undefined): string {
 }
 
 function shortSha(sha: string | null | undefined): string {
-  if (!sha) return "n/a";
+  if (!sha) return "暂无";
   return sha.slice(0, 7);
 }
 
@@ -57,7 +58,7 @@ function StatusBadge({ status }: { status: ReleaseRunStatus }) {
 
   return (
     <span className={`rounded-md border px-1.5 py-0 text-label font-medium uppercase tracking-wider ${cls}`}>
-      {status}
+      {formatStatusLabel(status)}
     </span>
   );
 }
@@ -71,8 +72,8 @@ function CopyButton({ text }: { text: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Clipboard write failed";
-      toast({ variant: "destructive", description: `Failed to copy: ${message}` });
+      const message = error instanceof Error ? error.message : "无法写入剪贴板";
+      toast({ variant: "destructive", description: `复制失败：${message}` });
     }
   };
 
@@ -82,7 +83,7 @@ function CopyButton({ text }: { text: string }) {
       onClick={handleCopy}
       className="cursor-pointer rounded-md border border-border bg-transparent px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
     >
-      {copied ? "copied" : "copy"}
+      {copied ? "已复制" : "复制"}
     </button>
   );
 }
@@ -97,7 +98,7 @@ function ReleasePreviewPanel({
   if (loading && !preview) {
     return (
       <div className="mb-4 rounded-md border border-border px-4 py-3 text-body text-muted-foreground">
-        Loading release preview…
+        正在加载发布预览…
       </div>
     );
   }
@@ -107,9 +108,9 @@ function ReleasePreviewPanel({
   if (preview.state === "empty") {
     return (
       <div className="mb-4 rounded-md border border-border px-4 py-3" data-testid="release-readiness-preview">
-        <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">Release preview</div>
+        <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">发布预览</div>
         <div className="mt-1 text-body text-muted-foreground">
-          No unreleased merged pull requests found for <span className="font-mono text-foreground">{preview.repo}</span>.
+          以下仓库没有待发布的已合并 PR： <span className="font-mono text-foreground">{preview.repo}</span>.
         </div>
       </div>
     );
@@ -119,19 +120,19 @@ function ReleasePreviewPanel({
     <section className="mb-4 rounded-md border border-border px-4 py-3" data-testid="release-readiness-preview">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">Release preview</div>
+          <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">发布预览</div>
           <a
             href={preview.triggerPr?.url}
             target="_blank"
             rel="noreferrer"
             className="mt-1 block text-body font-medium text-foreground hover:text-primary"
           >
-            Next trigger: #{preview.triggerPr?.number} {preview.triggerPr?.title}
+            下次触发：#{preview.triggerPr?.number} {preview.triggerPr?.title}
           </a>
         </div>
         <div className="text-right font-mono text-label text-muted-foreground">
-          <div>base {preview.baseBranch}</div>
-          <div>latest {preview.latestTag ?? "none"}</div>
+          <div>基础版本 {preview.baseBranch}</div>
+          <div>最新版本 {preview.latestTag ?? "无"}</div>
         </div>
       </div>
 
@@ -147,7 +148,7 @@ function ReleasePreviewPanel({
 
       <div className="mt-3 grid gap-1 text-label">
         <div className="text-label uppercase tracking-wider text-muted-foreground">
-          Included PRs <span className="font-mono text-foreground">{preview.includedPrs.length}</span>
+          包含的 PR <span className="font-mono text-foreground">{preview.includedPrs.length}</span>
         </div>
         {preview.includedPrs.slice(0, 6).map((pr) => (
           <a key={`${pr.number}-${pr.mergeSha}`} href={pr.url} target="_blank" rel="noreferrer" className="truncate text-muted-foreground hover:text-foreground">
@@ -155,14 +156,14 @@ function ReleasePreviewPanel({
           </a>
         ))}
         {preview.includedPrs.length > 6 && (
-          <div className="text-muted-foreground">+{preview.includedPrs.length - 6} more included PRs</div>
+          <div className="text-muted-foreground">+{preview.includedPrs.length - 6} 个其他 PR</div>
         )}
       </div>
 
       <div className="mt-3 text-label text-muted-foreground">
         {preview.existingRunId
-          ? `Existing release run ${preview.existingRunId.slice(0, 8)} is ${preview.existingRunStatus}.`
-          : "Manual release will evaluate this candidate before publishing."}
+          ? `现有发布任务 ${preview.existingRunId.slice(0, 8)} 的状态为 ${formatStatusLabel(preview.existingRunStatus ?? "未知")}。`
+          : "手动发布会先评估此候选版本，再决定是否发布。"}
       </div>
     </section>
   );
@@ -213,30 +214,30 @@ function ReleaseRunCard({
           )}
           {!run.proposedVersion && run.recommendedBump && (
             <span className="text-label text-muted-foreground">
-              bump {run.recommendedBump}
+              版本升级 {run.recommendedBump}
             </span>
           )}
           {githubRelease && (
             <span
               className="inline-flex items-center gap-1 rounded-md border border-success-border bg-success-muted px-1.5 py-0 text-label font-medium uppercase tracking-wider text-success-foreground"
-              title={`Linked to GitHub release ${githubRelease.tagName}`}
+              title={`已关联 GitHub 发布 ${githubRelease.tagName}`}
               data-testid={`github-link-${run.id}`}
             >
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
-              on GitHub
+              在 GitHub 上查看
             </span>
           )}
         </div>
         <div className="flex items-center gap-3 text-label text-muted-foreground">
           <span>{formatDateTime(run.createdAt)}</span>
-          <span>{expanded ? "Hide" : "Show"}</span>
+          <span>{expanded ? "隐藏" : "显示"}</span>
         </div>
       </button>
 
       {expanded && (
         <div id={detailsId} className="border-t border-border px-4 pb-4 pt-3">
           <div className="mb-3 text-body text-muted-foreground">
-            Trigger PR:{" "}
+            触发 PR：{" "}
             <a href={run.triggerPrUrl} target="_blank" rel="noreferrer noopener" className="underline underline-offset-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
               #{run.triggerPrNumber} {run.triggerPrTitle}
             </a>
@@ -248,22 +249,22 @@ function ReleaseRunCard({
 
           {run.releaseTitle && (
             <p className="mb-3 text-body">
-              <span className="text-muted-foreground">Release title:</span>{" "}
+              <span className="text-muted-foreground">发布标题：</span>{" "}
               <span>{run.releaseTitle}</span>
             </p>
           )}
 
           <div className="mb-3 grid grid-cols-1 gap-2 text-body text-muted-foreground md:grid-cols-2">
-            <div>Base branch: {run.baseBranch || "n/a"}</div>
-            <div>Trigger SHA: {shortSha(run.triggerMergeSha)}</div>
-            <div>Merged at: {formatDateTime(run.triggerMergedAt)}</div>
-            <div>Updated: {formatDateTime(run.updatedAt)}</div>
+            <div>基础分支： {run.baseBranch || "n/a"}</div>
+            <div>触发提交 SHA： {shortSha(run.triggerMergeSha)}</div>
+            <div>合并时间： {formatDateTime(run.triggerMergedAt)}</div>
+            <div>更新时间： {formatDateTime(run.updatedAt)}</div>
           </div>
 
           {run.includedPrs.length > 0 && (
             <div className="mb-3">
               <div className="mb-1.5 text-label uppercase tracking-wider text-muted-foreground">
-                Included PRs ({run.includedPrs.length})
+                包含的 PR（{run.includedPrs.length})
               </div>
               <div className="space-y-1 border border-border p-3 text-body">
                 {run.includedPrs.map((pr) => (
@@ -272,7 +273,7 @@ function ReleaseRunCard({
                       #{pr.number} {pr.title}
                     </span>
                     <a href={pr.url} target="_blank" rel="noreferrer noopener" className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
-                      open
+                      未关闭
                     </a>
                   </div>
                 ))}
@@ -283,7 +284,7 @@ function ReleaseRunCard({
           {run.releaseNotes && (
             <div className="mb-3">
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-label uppercase tracking-wider text-muted-foreground">Release Notes</span>
+                <span className="text-label uppercase tracking-wider text-muted-foreground">发布说明</span>
                 <CopyButton text={run.releaseNotes} />
               </div>
               <pre className="whitespace-pre-wrap border border-border bg-background p-3 text-body leading-relaxed font-mono">
@@ -302,7 +303,7 @@ function ReleaseRunCard({
             <div className="mb-3 rounded-md border border-success-border bg-success-muted/40 px-3 py-2 text-body">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-label">
                 <span className="text-label font-medium uppercase tracking-wider text-success-foreground">
-                  Linked GitHub release
+                  关联的 GitHub 发布
                 </span>
                 <span className="text-border" aria-hidden="true">·</span>
                 <span className="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0 font-mono text-label font-medium uppercase tracking-wider text-primary">
@@ -312,7 +313,7 @@ function ReleaseRunCard({
                   <>
                     <span className="text-border" aria-hidden="true">·</span>
                     <span className="text-muted-foreground">
-                      published <span className="font-mono">{formatDateTime(githubRelease.publishedAt)}</span>
+                      已发布 <span className="font-mono">{formatDateTime(githubRelease.publishedAt)}</span>
                     </span>
                   </>
                 )}
@@ -332,7 +333,7 @@ function ReleaseRunCard({
                 className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-transparent px-2.5 py-0.5 text-label font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               >
                 <ExternalLink className="h-3 w-3" />
-                Open on GitHub
+                在 GitHub 上打开
               </a>
             )}
             {run.status === "error" && (
@@ -342,13 +343,13 @@ function ReleaseRunCard({
                 disabled={retryPending}
                 className="cursor-pointer rounded-md border border-primary bg-primary px-3 py-1 text-label font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
               >
-                retry
+                重试
               </button>
             )}
           </div>
 
           {shouldShowEmptyDetails && (
-            <p className="mt-2 text-body text-muted-foreground">No details available yet.</p>
+            <p className="mt-2 text-body text-muted-foreground">暂无详情。</p>
           )}
 
           <SocialPostGenerator
@@ -512,10 +513,10 @@ export default function Releases() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/releases"] });
-      toast({ description: "Retry queued." });
+      toast({ description: "已安排重试。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Retry failed: ${error.message}` });
+      toast({ variant: "destructive", description: `重试失败：${error.message}` });
     },
   });
 
@@ -527,7 +528,7 @@ export default function Releases() {
         status={(
           releases.length > 0 || orphans.length > 0 ? (
             <span>
-              <span className="font-mono text-foreground">{releases.length}</span> pipeline / <span className="font-mono text-foreground">{orphans.length}</span> external
+              <span className="font-mono text-foreground">{releases.length}</span> 流水线 / <span className="font-mono text-foreground">{orphans.length}</span> 外部发布
             </span>
           ) : null
         )}
@@ -538,14 +539,14 @@ export default function Releases() {
         <aside className="flex max-h-[42vh] w-full shrink-0 flex-col overflow-hidden border-b border-border lg:max-h-none lg:w-72 lg:border-b-0 lg:border-r">
           <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2">
             <span className="text-label font-medium uppercase tracking-wider text-muted-foreground">
-              Watched repositories
+              关注的仓库
             </span>
             <button
               type="button"
               onClick={handleSyncGitHub}
               disabled={isFetchingGitHub || runtimeState === undefined}
-              title={isFetchingGitHub ? "Syncing…" : "Sync from GitHub"}
-              aria-label={isFetchingGitHub ? "Syncing from GitHub" : "Sync from GitHub"}
+              title={isFetchingGitHub ? "正在同步…" : "从 GitHub 同步"}
+              aria-label={isFetchingGitHub ? "正在从 GitHub 同步" : "从 GitHub 同步"}
               data-testid="button-sync-github-releases"
               className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-primary bg-primary text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -558,10 +559,10 @@ export default function Releases() {
           </div>
           <div className="flex-1 overflow-y-auto">
             {isLoading && repoList.length === 0 ? (
-              <div className="p-4 text-body text-muted-foreground">Loading…</div>
+              <div className="p-4 text-body text-muted-foreground">正在加载…</div>
             ) : repoList.length === 0 ? (
               <div className="p-4 text-body text-muted-foreground">
-                No watched repositories. Add some from Settings.
+                尚未关注仓库，请在设置中添加。
               </div>
             ) : (
               repoList.map((repo) => (
@@ -581,7 +582,7 @@ export default function Releases() {
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {githubError && (
             <div className="mx-6 mt-6 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-body text-destructive">
-              <div className="text-label font-medium uppercase tracking-wider">GitHub sync error</div>
+              <div className="text-label font-medium uppercase tracking-wider">GitHub 同步错误</div>
               <div className="mt-1 whitespace-pre-wrap break-words">
                 {githubError instanceof Error ? githubError.message : String(githubError)}
               </div>
@@ -590,14 +591,14 @@ export default function Releases() {
 
           {!selectedRepo ? (
             <div className="flex flex-1 items-center justify-center p-6 text-body text-muted-foreground">
-              {isLoading ? "Loading…" : "Select a repository from the left to see its releases."}
+              {isLoading ? "正在加载…" : "从左侧选择仓库以查看发布记录。"}
             </div>
           ) : (
             <div className="p-6">
 	              <div className="mb-4 flex items-baseline justify-between">
 	                <h2 className="text-title font-semibold tracking-tight">{selectedRepo}</h2>
 	                <span className="font-mono text-label text-muted-foreground">
-	                  {selectedRuns.length} pipeline · {selectedOrphans.length} external
+	                  {selectedRuns.length} 流水线 · {selectedOrphans.length} 外部发布
 	                </span>
 	              </div>
 
@@ -605,9 +606,9 @@ export default function Releases() {
 
 	              {selectedRuns.length === 0 && selectedOrphans.length === 0 ? (
                 <div className="rounded-md border border-border px-4 py-8 text-center">
-                  <p className="text-body text-muted-foreground">No release activity yet.</p>
+                  <p className="text-body text-muted-foreground">暂无发布活动。</p>
                   <p className="mt-1 text-body text-muted-foreground">
-                    Pipeline runs appear after merged PRs are evaluated. GitHub releases appear when you sync from GitHub.
+                    评估已合并的 PR 后会显示发布流水线记录；从 GitHub 同步后会显示发布版本。
                   </p>
                 </div>
               ) : (
@@ -616,7 +617,7 @@ export default function Releases() {
                     <section>
                       <div className="mb-2 flex items-baseline justify-between">
                         <h3 className="text-label font-medium uppercase tracking-wider text-muted-foreground">
-                          Pipeline runs
+                          发布流水线
                         </h3>
                         <span className="font-mono text-label text-muted-foreground">
                           {selectedRuns.length}
@@ -645,14 +646,14 @@ export default function Releases() {
                     <section>
                       <div className="mb-2 flex items-baseline justify-between">
                         <h3 className="text-label font-medium uppercase tracking-wider text-muted-foreground">
-                          Published outside the pipeline
+                          流水线外发布
                         </h3>
                         <span className="font-mono text-label text-muted-foreground">
                           {selectedOrphans.length}
                         </span>
                       </div>
                       <p className="mb-3 text-label text-muted-foreground">
-                        GitHub releases with no matching internal run. Created manually or before this tool started watching.
+                        这些 GitHub 发布没有对应的内部任务，可能由手动创建，或早于开始监控的时间。
                       </p>
                       <div className="flex flex-col gap-2">
                         {selectedOrphans.map((release) => (

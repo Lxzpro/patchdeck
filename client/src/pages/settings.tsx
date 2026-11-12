@@ -14,13 +14,13 @@ import {
 import { getUiPollIntervalMs } from "@/lib/polling";
 
 const WATCH_SCOPE_OPTIONS = [
-  { value: "mine", label: "My PRs only" },
-  { value: "team", label: "My PRs + teammates" },
+  { value: "mine", label: "仅我的 PR" },
+  { value: "team", label: "我和队友的 PR" },
 ] as const;
 
 const ISSUE_WORK_MODE_OPTIONS = [
-  { value: "manual", label: "Manual" },
-  { value: "auto", label: "Auto" },
+  { value: "manual", label: "手动" },
+  { value: "auto", label: "自动" },
 ] as const;
 
 const AGENT_OPTIONS = [
@@ -29,7 +29,7 @@ const AGENT_OPTIONS = [
 ] as const;
 
 const REPO_AGENT_OPTIONS = [
-  { value: "inherit", label: "Global" },
+  { value: "inherit", label: "使用全局设置" },
   { value: "codex", label: "codex" },
   { value: "claude", label: "claude" },
 ] as const;
@@ -52,8 +52,8 @@ const DEFAULT_SETTING_VALUES = {
 };
 
 const EMPTY_AGENT_MODEL_CATALOG: AgentModelCatalog = {
-  codex: [{ value: "", label: "CLI default" }],
-  claude: [{ value: "", label: "CLI default" }],
+  codex: [{ value: "", label: "CLI 默认" }],
+  claude: [{ value: "", label: "CLI 默认" }],
 };
 
 function includeSelectedModel(
@@ -67,20 +67,20 @@ function includeSelectedModel(
 }
 
 const CODEX_REASONING_OPTIONS = [
-  { value: "default", label: "CLI default" },
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-  { value: "xhigh", label: "XHigh" },
+  { value: "default", label: "CLI 默认" },
+  { value: "low", label: "低" },
+  { value: "medium", label: "中" },
+  { value: "high", label: "高" },
+  { value: "xhigh", label: "极高" },
 ] as const;
 
 const CLAUDE_EFFORT_OPTIONS = [
   ...CODEX_REASONING_OPTIONS,
-  { value: "max", label: "Max" },
+  { value: "max", label: "最高" },
 ] as const;
 
-const DRAIN_PAUSED_LABEL = "Paused";
-const DRAIN_PAUSED_TITLE = "Paused by drain mode";
+const DRAIN_PAUSED_LABEL = "已暂停";
+const DRAIN_PAUSED_TITLE = "已因排空模式暂停";
 
 type GitHubRateLimitState = {
   limited: boolean;
@@ -147,11 +147,11 @@ const TOKEN_TEST_STATUS_CLASS: Record<GitHubTokenTestResult["status"], string> =
 };
 
 const GITHUB_AUTH_SOURCE_LABEL: Record<GitHubAuthStatus["source"], string> = {
-  saved_token: "saved token",
+  saved_token: "已保存的 Token",
   env_token: "GITHUB_TOKEN",
-  gh_auth: "gh auth",
-  gh_auth_fallback: "gh auth fallback",
-  none: "not configured",
+  gh_auth: "gh 登录",
+  gh_auth_fallback: "gh 登录回退",
+  none: "未配置",
 };
 
 type WatchScope = (typeof WATCH_SCOPE_OPTIONS)[number]["value"];
@@ -275,36 +275,36 @@ type SettingsTocGroup = { id: string; label: string; items: SettingsTocItem[] };
 const SETTINGS_TOC: SettingsTocGroup[] = [
   {
     id: "sources",
-    label: "Sources",
+    label: "关注来源",
     items: [
-      { id: "sources-add", label: "Add" },
-      { id: "sources-repos", label: "Repositories" },
+      { id: "sources-add", label: "添加" },
+      { id: "sources-repos", label: "仓库" },
     ],
   },
   {
     id: "agent",
-    label: "Agent",
+    label: "代理",
     items: [
-      { id: "agent-models", label: "Models" },
-      { id: "agent-autofix", label: "Auto fixes" },
-      { id: "agent-tuning", label: "Tuning" },
-      { id: "agent-ci", label: "CI Healing" },
+      { id: "agent-models", label: "模型" },
+      { id: "agent-autofix", label: "自动修复" },
+      { id: "agent-tuning", label: "运行参数" },
+      { id: "agent-ci", label: "CI 自动修复" },
     ],
   },
   {
     id: "delivery",
-    label: "Delivery",
+    label: "交付",
     items: [
-      { id: "delivery-releases", label: "Releases" },
+      { id: "delivery-releases", label: "发布" },
       { id: "delivery-github", label: "GitHub" },
     ],
   },
   {
     id: "system",
-    label: "System",
+    label: "系统",
     items: [
-      { id: "system-runtime", label: "Runtime" },
-      { id: "system-remote", label: "Remote access" },
+      { id: "system-runtime", label: "运行状态" },
+      { id: "system-remote", label: "远程访问" },
     ],
   },
 ];
@@ -316,9 +316,9 @@ function scrollToSettingsSection(id: string) {
 function SettingsTOC() {
   return (
     <aside className="hidden w-48 shrink-0 lg:block">
-      <nav className="sticky top-6 text-body" aria-label="Settings sections">
+      <nav className="sticky top-6 text-body" aria-label="设置分类">
         <div className="mb-3 text-label font-medium uppercase tracking-wider text-muted-foreground">
-          On this page
+          本页目录
         </div>
         <ul className="space-y-0.5">
           {SETTINGS_TOC.flatMap((group, gi) => [
@@ -495,12 +495,12 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ["/api/runtime"] });
       toast({
         description: variables.enabled
-          ? "Automation paused. New runs are blocked; in-flight runs will finish."
-          : "Automation resumed.",
+          ? "自动化已暂停，不再启动新任务，正在运行的任务会继续完成。"
+          : "自动化已恢复。",
       });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Failed to update drain mode: ${error.message}` });
+      toast({ variant: "destructive", description: `更新排空模式失败：${error.message}` });
     },
   });
 
@@ -514,10 +514,10 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ["/api/agent-models"] });
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/github-auth/status"] });
-      toast({ description: "Settings saved." });
+      toast({ description: "设置已保存。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Failed to save: ${error.message}` });
+      toast({ variant: "destructive", description: `保存失败：${error.message}` });
     },
   });
 
@@ -531,10 +531,10 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/repos/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/status"] });
-      toast({ description: "Repository sync queued." });
+      toast({ description: "仓库同步已加入队列。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not fetch repositories: ${error.message}` });
+      toast({ variant: "destructive", description: `无法获取仓库：${error.message}` });
     },
   });
 
@@ -546,10 +546,10 @@ export default function Settings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/repos/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/status"] });
-      toast({ description: "Repository settings saved." });
+      toast({ description: "仓库设置已保存。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not update repository settings: ${error.message}` });
+      toast({ variant: "destructive", description: `无法更新仓库设置：${error.message}` });
     },
   });
 
@@ -561,7 +561,7 @@ export default function Settings() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/github-auth/status"] });
       const entries: GitHubTokenTestLogEntry[] = result.results.length === 0
-        ? [{ kind: "info", message: "No configured GitHub tokens to test." }]
+        ? [{ kind: "info", message: "没有可测试的 GitHub Token。" }]
         : result.results.map((data) => ({ kind: "result", data }));
 
       setTokenTestLogs((previous) => [
@@ -569,7 +569,7 @@ export default function Settings() {
         ...previous,
       ].slice(0, TOKEN_TEST_LOG_LIMIT));
 
-      toast({ description: "GitHub key test complete." });
+      toast({ description: "GitHub Token 测试完成。" });
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : String(error);
@@ -582,7 +582,7 @@ export default function Settings() {
         },
         ...previous,
       ].slice(0, TOKEN_TEST_LOG_LIMIT));
-      toast({ variant: "destructive", description: `GitHub key test failed: ${message}` });
+      toast({ variant: "destructive", description: `GitHub Token 测试失败：${message}` });
     },
   });
 
@@ -599,12 +599,12 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/status"] });
       toast({
         description: result.mode === "hard"
-          ? `Removed ${result.repo} and ${result.removedPrs} tracked PR${result.removedPrs === 1 ? "" : "s"}.`
-          : `Stopped watching ${result.repo}.`,
+          ? `已移除 ${result.repo} 及其 ${result.removedPrs} 个跟踪的 PR。`
+          : `已停止关注 ${result.repo}。`,
       });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not remove repository: ${error.message}` });
+      toast({ variant: "destructive", description: `无法移除仓库：${error.message}` });
     },
   });
 
@@ -616,10 +616,10 @@ export default function Settings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/releases"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      toast({ description: "Release queued." });
+      toast({ description: "发布任务已加入队列。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not queue release: ${error.message}` });
+      toast({ variant: "destructive", description: `无法安排发布：${error.message}` });
     },
   });
 
@@ -634,10 +634,10 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ["/api/repos/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/status"] });
       setAddUrl("");
-      toast({ description: "PR added." });
+      toast({ description: "已添加 PR。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not add PR: ${error.message}` });
+      toast({ variant: "destructive", description: `无法添加 PR：${error.message}` });
     },
   });
 
@@ -664,16 +664,16 @@ export default function Settings() {
         } catch (error) {
           toast({
             variant: "destructive",
-            description: `Repository added, but could not update tracking scope: ${error instanceof Error ? error.message : String(error)}`,
+            description: `仓库已添加，但无法更新跟踪范围：${error instanceof Error ? error.message : String(error)}`,
           });
           return;
         }
       }
 
-      toast({ description: "Repository added." });
+      toast({ description: "已添加仓库。" });
     },
     onError: (error) => {
-      toast({ variant: "destructive", description: `Could not watch repository: ${error.message}` });
+      toast({ variant: "destructive", description: `无法关注仓库：${error.message}` });
     },
   });
 
@@ -686,17 +686,17 @@ export default function Settings() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
             <div>
-              <h1 className="text-display font-semibold tracking-tight text-foreground">Settings</h1>
+              <h1 className="text-display font-semibold tracking-tight text-foreground">设置</h1>
               <p className="mt-1 text-body text-muted-foreground">
-                Configure what PatchDeck watches, how the agent behaves, and how releases ship.
+                配置关注范围、代理行为和发布方式。
               </p>
             </div>
           </div>
           <div className="flex gap-8">
             <SettingsTOC />
             <div className="min-w-0 flex-1 space-y-12">
-              <SettingsGroup id="sources" title="Sources" description="What PatchDeck watches.">
-                <SettingsSubsection id="sources-add" title="Add" description="Add a PR or watch another repo.">
+              <SettingsGroup id="sources" title="关注来源" description="配置 PatchDeck 的关注范围。">
+                <SettingsSubsection id="sources-add" title="添加" description="添加 PR 或关注其他仓库。">
             <div className="grid gap-3 md:grid-cols-2">
               <form
                 onSubmit={(e) => {
@@ -705,7 +705,7 @@ export default function Settings() {
                 }}
                 className="rounded-md border border-border p-4"
               >
-                <label htmlFor="settings-add-pr" className="text-body">Pull request</label>
+                <label htmlFor="settings-add-pr" className="text-body">拉取请求</label>
                 <div className="mt-2 flex gap-2">
                   <input
                     id="settings-add-pr"
@@ -713,7 +713,7 @@ export default function Settings() {
                     value={addUrl}
                     onChange={(e) => setAddUrl(e.target.value)}
                     placeholder="github.com/owner/repo/pull/123"
-                    aria-label="GitHub pull request URL"
+                    aria-label="GitHub PR 链接"
                     data-testid="input-add-pr"
                     className="min-w-0 flex-1 border border-border bg-transparent px-2 py-1 text-body placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   />
@@ -723,7 +723,7 @@ export default function Settings() {
                     data-testid="button-add-pr"
                     className="cursor-pointer rounded-md border border-primary bg-primary px-3 py-1 text-label font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Add
+                    添加
                   </button>
                 </div>
               </form>
@@ -737,7 +737,7 @@ export default function Settings() {
                 }}
                 className="rounded-md border border-border p-4"
               >
-                <label htmlFor="settings-add-repo" className="text-body">Repository</label>
+                <label htmlFor="settings-add-repo" className="text-body">仓库</label>
                 <div className="mt-2 flex gap-2">
                   <input
                     id="settings-add-repo"
@@ -745,7 +745,7 @@ export default function Settings() {
                     value={addRepo}
                     onChange={(e) => setAddRepo(e.target.value)}
                     placeholder="owner/repo"
-                    aria-label="Repository owner and name"
+                    aria-label="仓库所有者和名称"
                     data-testid="input-add-repo"
                     className="min-w-0 flex-1 border border-border bg-transparent px-2 py-1 text-body placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   />
@@ -755,12 +755,12 @@ export default function Settings() {
                     data-testid="button-add-repo"
                     className="cursor-pointer rounded-md border border-primary bg-primary px-3 py-1 text-label font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Watch
+                    关注
                   </button>
                 </div>
                 <div className="mt-3">
                   <div className="text-label uppercase tracking-wider text-muted-foreground">
-                    Track automatically
+                    自动跟踪
                   </div>
                   <WatchScopeControl
                     value={watchScope}
@@ -776,24 +776,24 @@ export default function Settings() {
 
                 <SettingsSubsection
                   id="sources-repos"
-                  title="Repositories"
-                  description="Repo-level automation, issue work, and release controls."
+                  title="仓库"
+                  description="按仓库配置自动化、议题处理和发布。"
                   action={
                     <button
                       type="button"
                       onClick={() => syncReposMutation.mutate()}
                       disabled={syncReposMutation.isPending || globalDrainMode}
-                      title={globalDrainMode ? DRAIN_PAUSED_TITLE : "Sync watched repos from GitHub"}
+                      title={globalDrainMode ? DRAIN_PAUSED_TITLE : "从 GitHub 同步关注的仓库"}
                       data-testid="button-sync-repos"
                       className="cursor-pointer rounded-md border border-primary bg-primary px-3 py-1 text-body font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      {globalDrainMode ? DRAIN_PAUSED_LABEL : syncReposMutation.isPending ? "Syncing..." : "Sync"}
+                      {globalDrainMode ? DRAIN_PAUSED_LABEL : syncReposMutation.isPending ? "正在同步…" : "同步"}
                     </button>
                   }
                 >
             {repos.length === 0 ? (
               <div className="rounded-md border border-border p-4 text-body text-muted-foreground">
-                No repositories being watched yet.
+                尚未关注任何仓库。
               </div>
             ) : (
               <div className="grid gap-3">
@@ -824,7 +824,7 @@ export default function Settings() {
                             {repo.repo}
                           </a>
                           <div className="mt-1 text-label text-muted-foreground">
-                            {repo.ownPrsOnly === false ? "Tracking team PRs" : "Tracking your PRs"} · PR monitoring {repo.prAutoMonitor === false ? "manual" : "auto"} · issue evaluate {repo.issueAutoEvaluate ? "auto" : "manual"} · issue work {repo.issueAutoWork ? "auto" : "manual"}
+                            {repo.ownPrsOnly === false ? "跟踪团队 PR" : "跟踪我的 PR"} · PR 监控 {repo.prAutoMonitor === false ? "manual" : "auto"} · 议题评估 {repo.issueAutoEvaluate ? "auto" : "manual"} · 议题处理 {repo.issueAutoWork ? "auto" : "manual"}
                           </div>
                           <div className="mt-2 flex flex-wrap items-center gap-2 text-label uppercase tracking-wider">
                             <span
@@ -837,21 +837,21 @@ export default function Settings() {
                               }`}
                               data-testid={`tracked-repo-automation-mode-${repo.repo.replace("/", "-")}`}
                             >
-                              {repoFullyAuto ? "Auto mode" : repoPartiallyAuto ? "Mixed mode" : "Manual mode"}
+                              {repoFullyAuto ? "自动模式" : repoPartiallyAuto ? "混合模式" : "手动模式"}
                             </span>
                             {repo.prAutoMonitor === false && (
                               <span className="inline-flex items-center border border-border px-2 py-0.5 text-muted-foreground">
-                                PR: manual
+                                PR：手动
                               </span>
                             )}
                             {!repo.issueAutoEvaluate && (
                               <span className="inline-flex items-center border border-border px-2 py-0.5 text-muted-foreground">
-                                Issue evaluate: manual
+                                议题评估：手动
                               </span>
                             )}
                             {!repo.issueAutoWork && (
                               <span className="inline-flex items-center border border-border px-2 py-0.5 text-muted-foreground">
-                                Issue work: manual
+                                议题处理：手动
                               </span>
                             )}
                           </div>
@@ -860,39 +860,39 @@ export default function Settings() {
                           type="button"
                           onClick={() => manualReleaseMutation.mutate(repo.repo)}
                           disabled={manualReleaseMutation.isPending || globalDrainMode}
-                          title={globalDrainMode ? DRAIN_PAUSED_TITLE : "Queue manual release"}
+                          title={globalDrainMode ? DRAIN_PAUSED_TITLE : "安排手动发布"}
                           data-testid={`tracked-repo-manual-release-${repo.repo.replace("/", "-")}`}
                           className="shrink-0 border border-border px-2 py-1 text-body uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30"
                         >
-                          {globalDrainMode ? DRAIN_PAUSED_LABEL : manualReleasePending ? "Releasing..." : "Release"}
+                          {globalDrainMode ? DRAIN_PAUSED_LABEL : manualReleasePending ? "正在发布…" : "发布"}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            if (window.confirm(`Stop watching ${repo.repo}? Tracked PR history will stay in Patchdeck.`)) {
+                            if (window.confirm(`停止关注 ${repo.repo}？已跟踪的 PR 历史会保留在 PatchDeck 中。`)) {
                               removeRepoMutation.mutate({ repo: repo.repo, mode: "soft" });
                             }
                           }}
                           disabled={removeRepoMutation.isPending}
-                          title="Stop watching this repository and keep tracked PR history"
+                          title="停止关注此仓库，保留 PR 历史"
                           data-testid={`tracked-repo-soft-remove-${repo.repo.replace("/", "-")}`}
                           className="shrink-0 border border-border px-2 py-1 text-body uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30"
                         >
-                          Unwatch
+                          停止关注
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            if (window.confirm(`Hard remove ${repo.repo}? This stops watching and removes tracked PRs for this repo from Patchdeck.`)) {
+                            if (window.confirm(`彻底移除 ${repo.repo}？这会停止关注，并从 PatchDeck 删除此仓库已跟踪的 PR。`)) {
                               removeRepoMutation.mutate({ repo: repo.repo, mode: "hard" });
                             }
                           }}
                           disabled={removeRepoMutation.isPending}
-                          title="Stop watching this repository and remove tracked PRs"
+                          title="停止关注此仓库，并删除跟踪的 PR"
                           data-testid={`tracked-repo-hard-remove-${repo.repo.replace("/", "-")}`}
                           className="shrink-0 border border-destructive/60 px-2 py-1 text-body uppercase tracking-wider text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30"
                         >
-                          Remove data
+                          删除数据
                         </button>
                       </div>
                       {shouldShowRepoAutoAlert && (
@@ -901,7 +901,7 @@ export default function Settings() {
                           className="mt-3 flex flex-wrap items-center justify-between gap-2 border border-warning-border bg-warning-muted px-3 py-2 text-label text-warning-foreground"
                         >
                           <span>
-                            Global auto is on, but this repo is not fully automated yet.
+                            全局自动模式已开启，但此仓库尚未完全启用自动化。
                           </span>
                           <button
                             type="button"
@@ -917,7 +917,7 @@ export default function Settings() {
                             data-testid={`tracked-repo-enable-auto-${repo.repo.replace("/", "-")}`}
                             className="shrink-0 border border-warning-border bg-background px-2 py-1 text-label uppercase tracking-wider text-warning-foreground transition-colors hover:bg-warning-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-40"
                           >
-                            Enable auto for repo
+                            为仓库启用自动化
                           </button>
                         </div>
                       )}
@@ -926,13 +926,13 @@ export default function Settings() {
                           data-testid={`tracked-repo-global-issues-off-${repo.repo.replace("/", "-")}`}
                           className="mt-3 border border-warning-border bg-warning-muted px-3 py-2 text-label text-warning-foreground"
                         >
-                          Global Issues auto is off — these per-repo issue controls are paused. Re-enable from the AUTO MODE menu.
+                          全局议题自动模式已关闭，以下仓库议题设置暂不生效。可从“自动模式”菜单重新开启。
                         </div>
                       )}
                       <div className="mt-4 grid gap-4 md:grid-cols-3">
                         <div>
                           <div className="text-label uppercase tracking-wider text-muted-foreground">
-                            Track automatically
+                            自动跟踪
                           </div>
                           <WatchScopeControl
                             value={getWatchScope(repo.ownPrsOnly)}
@@ -949,7 +949,7 @@ export default function Settings() {
                         </div>
                         <div>
                           <div className="text-label uppercase tracking-wider text-muted-foreground">
-                            PR monitoring
+                            PR 监控
                           </div>
                           <IssueWorkModeControl
                             value={getPrMonitorMode(repo.prAutoMonitor)}
@@ -964,12 +964,12 @@ export default function Settings() {
                             testIdPrefix={`tracked-repo-pr-monitor-${repo.repo.replace("/", "-")}`}
                           />
                           <div className="mt-1 text-label text-muted-foreground">
-                            Manual still syncs PR status; skips automatic PR work.
+                            手动模式仍会同步 PR 状态，但不会自动处理 PR。
                           </div>
                         </div>
                         <div>
                           <div className="text-label uppercase tracking-wider text-muted-foreground">
-                            Issue auto-evaluate
+                            自动评估议题
                           </div>
                           <IssueWorkModeControl
                             value={getIssueEvaluateMode(repo.issueAutoEvaluate)}
@@ -986,7 +986,7 @@ export default function Settings() {
                         </div>
                         <div>
                           <div className="text-label uppercase tracking-wider text-muted-foreground">
-                            Issue work mode
+                            议题处理模式
                           </div>
                           <IssueWorkModeControl
                             value={getIssueWorkMode(repo.issueAutoWork)}
@@ -1001,7 +1001,7 @@ export default function Settings() {
                             testIdPrefix={`tracked-repo-issue-work-mode-${repo.repo.replace("/", "-")}`}
                           />
                           <div className="mt-1 text-label text-muted-foreground">
-                            Auto-work also enables auto-evaluate.
+                            自动处理会同时开启自动评估。
                           </div>
                         </div>
                         <label className="flex items-end gap-2 text-label uppercase tracking-wider text-muted-foreground">
@@ -1018,13 +1018,13 @@ export default function Settings() {
                             data-testid={`tracked-repo-auto-release-${id}`}
                             className="h-4 w-4 accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                           />
-                          Auto-release
+                          自动发布
                         </label>
                       </div>
                       <div className="mt-4 grid gap-3 border-t border-border pt-4 md:grid-cols-5">
                         <div className="grid gap-2">
                           <label htmlFor={`tracked-repo-agent-${id}`} className="text-label uppercase tracking-wider text-muted-foreground">
-                            Agent
+                            代理
                           </label>
                           <select
                             id={`tracked-repo-agent-${id}`}
@@ -1047,7 +1047,7 @@ export default function Settings() {
                         </div>
                         <div className="grid gap-2">
                           <label htmlFor={`tracked-repo-codex-model-${id}`} className="text-label uppercase tracking-wider text-muted-foreground">
-                            Codex model
+                            Codex 模型
                           </label>
                           <select
                             id={`tracked-repo-codex-model-${id}`}
@@ -1061,7 +1061,7 @@ export default function Settings() {
                             disabled={updateRepoSettingsMutation.isPending}
                             className="border border-border bg-transparent px-2 py-1 text-body focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            <option value="">Global</option>
+                            <option value="">使用全局设置</option>
                             {includeSelectedModel(codexModelOptions, repo.codexModel).filter((option) => option.value !== "").map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
@@ -1069,7 +1069,7 @@ export default function Settings() {
                         </div>
                         <div className="grid gap-2">
                           <label htmlFor={`tracked-repo-codex-reasoning-${id}`} className="text-label uppercase tracking-wider text-muted-foreground">
-                            Codex thinking
+                            Codex 思考强度
                           </label>
                           <select
                             id={`tracked-repo-codex-reasoning-${id}`}
@@ -1085,7 +1085,7 @@ export default function Settings() {
                             disabled={updateRepoSettingsMutation.isPending}
                             className="border border-border bg-transparent px-2 py-1 text-body focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            <option value="">Global</option>
+                            <option value="">使用全局设置</option>
                             {CODEX_REASONING_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
@@ -1093,7 +1093,7 @@ export default function Settings() {
                         </div>
                         <div className="grid gap-2">
                           <label htmlFor={`tracked-repo-claude-model-${id}`} className="text-label uppercase tracking-wider text-muted-foreground">
-                            Claude model
+                            Claude 模型
                           </label>
                           <select
                             id={`tracked-repo-claude-model-${id}`}
@@ -1107,7 +1107,7 @@ export default function Settings() {
                             disabled={updateRepoSettingsMutation.isPending}
                             className="border border-border bg-transparent px-2 py-1 text-body focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            <option value="">Global</option>
+                            <option value="">使用全局设置</option>
                             {includeSelectedModel(claudeModelOptions, repo.claudeModel).filter((option) => option.value !== "").map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
@@ -1115,7 +1115,7 @@ export default function Settings() {
                         </div>
                         <div className="grid gap-2">
                           <label htmlFor={`tracked-repo-claude-effort-${id}`} className="text-label uppercase tracking-wider text-muted-foreground">
-                            Claude thinking
+                            Claude 思考强度
                           </label>
                           <select
                             id={`tracked-repo-claude-effort-${id}`}
@@ -1131,7 +1131,7 @@ export default function Settings() {
                             disabled={updateRepoSettingsMutation.isPending}
                             className="border border-border bg-transparent px-2 py-1 text-body focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            <option value="">Global</option>
+                            <option value="">使用全局设置</option>
                             {CLAUDE_EFFORT_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
@@ -1140,7 +1140,7 @@ export default function Settings() {
                       </div>
                       <div className="mt-4 grid gap-2 border-t border-border pt-4">
                         <label htmlFor={`tracked-repo-agent-instructions-${id}`} className="text-label uppercase tracking-wider text-muted-foreground">
-                          Agent instructions
+                          代理指令
                         </label>
                         <textarea
                           id={`tracked-repo-agent-instructions-${id}`}
@@ -1156,7 +1156,7 @@ export default function Settings() {
                           }}
                           disabled={updateRepoSettingsMutation.isPending}
                           rows={4}
-                          placeholder="Repository-specific instructions for issue work and PR babysitter runs."
+                          placeholder="此仓库在议题处理和 PR 自动值守时使用的专属指令。"
                           className="min-h-24 resize-y border border-border bg-transparent px-3 py-2 text-body leading-relaxed focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                         />
                       </div>
@@ -1168,14 +1168,14 @@ export default function Settings() {
                 </SettingsSubsection>
               </SettingsGroup>
 
-              <SettingsGroup id="agent" title="Agent" description="How the agent runs across watched work.">
-                <SettingsSubsection id="agent-models" title="Models">
+              <SettingsGroup id="agent" title="代理" description="配置代理如何处理关注的任务。">
+                <SettingsSubsection id="agent-models" title="模型">
             <div className="flex flex-col gap-4 rounded-md border border-border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <label htmlFor="settings-coding-agent" className="text-body">Coding Agent</label>
+                  <label htmlFor="settings-coding-agent" className="text-body">编码代理</label>
                   <div className="text-label text-muted-foreground">
-                    CLI agent used to apply fixes
+                    执行修复的命令行代理
                   </div>
                 </div>
                 <select
@@ -1196,7 +1196,7 @@ export default function Settings() {
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="grid gap-2">
                   <label htmlFor="settings-codex-model" className="text-body uppercase tracking-wider text-muted-foreground">
-                    Codex model
+                    Codex 模型
                   </label>
                   <select
                     id="settings-codex-model"
@@ -1212,7 +1212,7 @@ export default function Settings() {
                 </div>
                 <div className="grid gap-2">
                   <label htmlFor="settings-codex-reasoning" className="text-body uppercase tracking-wider text-muted-foreground">
-                    Codex thinking
+                    Codex 思考强度
                   </label>
                   <select
                     id="settings-codex-reasoning"
@@ -1228,7 +1228,7 @@ export default function Settings() {
                 </div>
                 <div className="grid gap-2">
                   <label htmlFor="settings-claude-model" className="text-body uppercase tracking-wider text-muted-foreground">
-                    Claude model
+                    Claude 模型
                   </label>
                   <select
                     id="settings-claude-model"
@@ -1244,7 +1244,7 @@ export default function Settings() {
                 </div>
                 <div className="grid gap-2">
                   <label htmlFor="settings-claude-effort" className="text-body uppercase tracking-wider text-muted-foreground">
-                    Claude thinking
+                    Claude 思考强度
                   </label>
                   <select
                     id="settings-claude-effort"
@@ -1270,15 +1270,15 @@ export default function Settings() {
                     data-testid="checkbox-second-model-review"
                   />
                   <span>
-                    <span className="block text-body">Second-model review</span>
+                    <span className="block text-body">第二模型复核</span>
                     <span className="block text-label text-muted-foreground">
-                      Review and correct the primary agent&apos;s work before PatchDeck commits and pushes it.
+                      在 PatchDeck 提交和推送前，复核并纠正主代理的修改。
                     </span>
                   </span>
                 </label>
                 <div className="grid gap-2">
                   <label htmlFor="settings-review-model" className="text-label uppercase tracking-wider text-muted-foreground">
-                    Review model
+                    复核模型
                   </label>
                   <select
                     id="settings-review-model"
@@ -1296,7 +1296,7 @@ export default function Settings() {
                     className="border border-border bg-transparent px-2 py-1 text-body focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                     data-testid="select-review-model"
                   >
-                    <option value="" disabled>Choose a review model</option>
+                    <option value="" disabled>选择复核模型</option>
                     {reviewModelOptions.map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
@@ -1305,9 +1305,9 @@ export default function Settings() {
               </div>
               <label className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-body">Fallback to next coding agent</div>
+                  <div className="text-body">回退到其他编码代理</div>
                   <div className="text-label text-muted-foreground">
-                    If the configured agent cannot start or authenticate, retry the automation run with the other local agent.
+                    当前代理无法启动或认证时，尝试使用另一个本地代理运行任务。
                   </div>
                 </div>
                 <input
@@ -1326,13 +1326,13 @@ export default function Settings() {
             </div>
                 </SettingsSubsection>
 
-                <SettingsSubsection id="agent-autofix" title="Auto fixes">
+                <SettingsSubsection id="agent-autofix" title="自动修复">
             <div className="flex flex-col gap-4 rounded-md border border-border p-4">
               <label className="flex items-center justify-between gap-3 cursor-pointer">
                 <div>
-                  <div className="text-body">Auto-fix conflicts</div>
+                  <div className="text-body">自动修复冲突</div>
                   <div className="text-label text-muted-foreground">
-                    Ask the agent to fix merge conflicts when tracked PRs are not mergeable.
+                    跟踪的 PR 存在合并冲突时，让代理尝试修复。
                   </div>
                 </div>
                 <input
@@ -1350,9 +1350,9 @@ export default function Settings() {
               </label>
               <label className="flex items-center justify-between gap-3 cursor-pointer">
                 <div>
-                  <div className="text-body">Auto-update docs</div>
+                  <div className="text-body">自动更新文档</div>
                   <div className="text-label text-muted-foreground">
-                    Automatically assess whether tracked PRs need documentation updates.
+                    自动评估跟踪的 PR 是否需要更新文档。
                   </div>
                 </div>
                 <input
@@ -1371,59 +1371,59 @@ export default function Settings() {
             </div>
                 </SettingsSubsection>
 
-                <SettingsSubsection id="agent-tuning" title="Tuning">
+                <SettingsSubsection id="agent-tuning" title="运行参数">
             <div className="flex flex-col gap-4 rounded-md border border-border p-4">
               <SettingRow
-                label="Max turns"
-                description="Maximum agent turns per feedback item"
+                label="最大交互轮数"
+                description="每条反馈允许的最大代理交互轮数"
                 value={config?.maxTurns ?? 15}
                 onChange={(v) => updateConfigMutation.mutate({ maxTurns: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxTurns}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Poll interval (seconds)"
-                description="How often to check for new feedback"
+                label="检查间隔（秒）"
+                description="检查新反馈的频率"
                 value={msToSeconds(config?.pollIntervalMs ?? 600000)}
                 onChange={(v) => updateConfigMutation.mutate({ pollIntervalMs: secondsToMs(v) })}
                 defaultValue={DEFAULT_SETTING_VALUES.pollIntervalSeconds}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Batch window (seconds)"
-                description="Time to batch feedback before processing"
+                label="反馈聚合窗口（秒）"
+                description="处理前聚合反馈的等待时间"
                 value={msToSeconds(config?.batchWindowMs ?? 600000)}
                 onChange={(v) => updateConfigMutation.mutate({ batchWindowMs: secondsToMs(v) })}
                 defaultValue={DEFAULT_SETTING_VALUES.batchWindowSeconds}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Max changes per run"
-                description="Limit on concurrent changes"
+                label="每次运行的最大修改数"
+                description="并发修改数量上限"
                 value={config?.maxChangesPerRun ?? 20}
                 onChange={(v) => updateConfigMutation.mutate({ maxChangesPerRun: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxChangesPerRun}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Max concurrent PR work runs"
-                description="How many PRs can run at once before queueing the rest"
+                label="PR 处理并发上限"
+                description="可同时处理的 PR 数量，其余任务排队等待"
                 value={config?.maxConcurrentBabysitRuns ?? 3}
                 onChange={(v) => updateConfigMutation.mutate({ maxConcurrentBabysitRuns: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxConcurrentBabysitRuns}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Max agent retry attempts"
-                description="How many times failed work may re-run the agent before it parks for you. Network and GitHub failures retry regardless — they cost a request, not a run."
+                label="代理重试次数上限"
+                description="失败任务最多重新调用代理的次数，超过后等待人工处理。网络和 GitHub 失败使用独立重试机制，因为它们仅消耗请求。"
                 value={config?.maxAgentRetryAttempts ?? 3}
                 onChange={(v) => updateConfigMutation.mutate({ maxAgentRetryAttempts: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxAgentRetryAttempts}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Max agent runs per hour"
-                description="Ceiling on coding-agent runs across every path — PR work, issues, healing, releases, questions. Queued work waits and resumes as the hour rolls forward. 0 means unlimited."
+                label="每小时代理调用上限"
+                description="限制 PR、议题、修复、发布和问答的代理调用总数。达到上限后任务等待，额度恢复后自动继续。0 表示不限。"
                 value={config?.maxAgentInvocationsPerHour ?? 0}
                 onChange={(v) => updateConfigMutation.mutate({ maxAgentInvocationsPerHour: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxAgentInvocationsPerHour}
@@ -1432,18 +1432,18 @@ export default function Settings() {
             </div>
                 </SettingsSubsection>
 
-                <SettingsSubsection id="agent-ci" title="CI Healing">
+                <SettingsSubsection id="agent-ci" title="CI 自动修复">
             <div className="flex flex-col gap-4 rounded-md border border-border p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-body">Automatic CI healing</div>
+                  <div className="text-body">CI 自动修复</div>
                   <div className="text-label text-muted-foreground">
-                    Classify healable CI failures and run bounded repair attempts in isolated worktrees.
+                    识别可修复的 CI 失败，并在隔离 worktree 中进行有限次数的修复。
                   </div>
                 </div>
                 <input
                   type="checkbox"
-                  aria-label="Automatic CI healing"
+                  aria-label="CI 自动修复"
                   checked={config?.autoHealCI ?? false}
                   onChange={(e) =>
                     updateConfigMutation.mutate({
@@ -1455,32 +1455,32 @@ export default function Settings() {
                 />
               </div>
               <SettingRow
-                label="Max healing attempts per session"
-                description="Upper bound on repair attempts for a single healing session"
+                label="每个会话的修复次数上限"
+                description="单个修复会话允许的最大尝试次数"
                 value={config?.maxHealingAttemptsPerSession ?? 3}
                 onChange={(v) => updateConfigMutation.mutate({ maxHealingAttemptsPerSession: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxHealingAttemptsPerSession}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Max healing attempts per fingerprint"
-                description="Cap retries for the same failure fingerprint"
+                label="相同故障的修复次数上限"
+                description="相同故障特征允许的最大重试次数"
                 value={config?.maxHealingAttemptsPerFingerprint ?? 2}
                 onChange={(v) => updateConfigMutation.mutate({ maxHealingAttemptsPerFingerprint: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxHealingAttemptsPerFingerprint}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Max concurrent healing runs"
-                description="How many healing runs can execute at once"
+                label="修复并发上限"
+                description="可同时运行的修复任务数量"
                 value={config?.maxConcurrentHealingRuns ?? 1}
                 onChange={(v) => updateConfigMutation.mutate({ maxConcurrentHealingRuns: v })}
                 defaultValue={DEFAULT_SETTING_VALUES.maxConcurrentHealingRuns}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Healing cooldown (seconds)"
-                description="Backoff before a cooldowned session can retry"
+                label="修复冷却时间（秒）"
+                description="冷却中的会话再次尝试前需要等待的时间"
                 value={msToSeconds(config?.healingCooldownMs ?? 900000)}
                 onChange={(v) => updateConfigMutation.mutate({ healingCooldownMs: secondsToMs(v) })}
                 defaultValue={DEFAULT_SETTING_VALUES.healingCooldownSeconds}
@@ -1488,14 +1488,14 @@ export default function Settings() {
               />
               <label className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-body">Automatic deployment healing</div>
+                  <div className="text-body">部署自动修复</div>
                   <div className="text-label text-muted-foreground">
-                    Monitor supported post-merge deployments and open follow-up fix PRs when they fail.
+                    监控支持的平台在合并后的部署，失败时创建后续修复 PR。
                   </div>
                 </div>
                 <input
                   type="checkbox"
-                  aria-label="Automatic deployment healing"
+                  aria-label="部署自动修复"
                   checked={config?.autoHealDeployments ?? false}
                   onChange={(e) =>
                     updateConfigMutation.mutate({
@@ -1507,24 +1507,24 @@ export default function Settings() {
                 />
               </label>
               <SettingRow
-                label="Deployment check delay (seconds)"
-                description="Wait before checking a freshly produced deployment"
+                label="部署检查延迟（秒）"
+                description="新部署产生后，首次检查前的等待时间"
                 value={msToSeconds(config?.deploymentCheckDelayMs ?? 120000)}
                 onChange={(v) => updateConfigMutation.mutate({ deploymentCheckDelayMs: secondsToMs(v) })}
                 defaultValue={DEFAULT_SETTING_VALUES.deploymentCheckDelaySeconds}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Deployment check timeout (seconds)"
-                description="Maximum time to wait for deployment checks"
+                label="部署检查超时（秒）"
+                description="等待部署检查结果的最长时间"
                 value={msToSeconds(config?.deploymentCheckTimeoutMs ?? 900000)}
                 onChange={(v) => updateConfigMutation.mutate({ deploymentCheckTimeoutMs: secondsToMs(v) })}
                 defaultValue={DEFAULT_SETTING_VALUES.deploymentCheckTimeoutSeconds}
                 disabled={updateConfigMutation.isPending}
               />
               <SettingRow
-                label="Deployment check poll (seconds)"
-                description="How often deployment healing checks provider status"
+                label="部署检查间隔（秒）"
+                description="部署修复检查平台状态的频率"
                 value={msToSeconds(config?.deploymentCheckPollIntervalMs ?? 60000)}
                 onChange={(v) => updateConfigMutation.mutate({ deploymentCheckPollIntervalMs: secondsToMs(v) })}
                 defaultValue={DEFAULT_SETTING_VALUES.deploymentCheckPollSeconds}
@@ -1534,14 +1534,14 @@ export default function Settings() {
                 </SettingsSubsection>
               </SettingsGroup>
 
-              <SettingsGroup id="delivery" title="Delivery" description="Releases and GitHub integration.">
-                <SettingsSubsection id="delivery-releases" title="Releases">
+              <SettingsGroup id="delivery" title="交付" description="发布与 GitHub 集成。">
+                <SettingsSubsection id="delivery-releases" title="发布">
             <div className="flex flex-col gap-4 rounded-md border border-border p-4">
               <label className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-body">Automatic release creation</div>
+                  <div className="text-body">自动创建发布</div>
                   <div className="text-label text-muted-foreground">
-                    Evaluate merged PRs and publish GitHub releases automatically when the agent decides they are release-worthy.
+                    评估已合并 PR，由代理判断是否值得发布，并自动创建 GitHub 发布。
                   </div>
                 </div>
                 <input
@@ -1563,28 +1563,26 @@ export default function Settings() {
                 data-testid="github-auth-status"
               >
                 <div className="min-w-0">
-                  <div className="text-label uppercase tracking-wider text-muted-foreground">Active account</div>
+                  <div className="text-label uppercase tracking-wider text-muted-foreground">当前账号</div>
                   <div className="truncate font-mono text-body">
                     {githubAuthStatus?.connected && githubAuthStatus.login
                       ? `@${githubAuthStatus.login}`
-                      : "not connected"}
+                      : "未连接"}
                   </div>
                   {githubAuthStatus?.error ? (
                     <div className="mt-1 text-label text-destructive">{githubAuthStatus.error}</div>
                   ) : null}
                 </div>
                 <div className="shrink-0 text-label text-muted-foreground">
-                  source: <span className="font-mono text-foreground">{GITHUB_AUTH_SOURCE_LABEL[githubAuthStatus?.source ?? "none"]}</span>
+                  来源： <span className="font-mono text-foreground">{GITHUB_AUTH_SOURCE_LABEL[githubAuthStatus?.source ?? "none"]}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-body">Tokens</div>
+                    <div className="text-body">Token 列表</div>
                     <div className="text-label text-muted-foreground">
-                      Tried in order before GITHUB_TOKEN and gh auth. For fine-grained PATs, give the watched repos
-                      Metadata: read, Contents: read/write if you push, Issues: read/write, Pull requests: read/write,
-                      and Checks: read. Tokens from the same GitHub account share the same rate-limit bucket.
+                      按顺序尝试，优先于 GITHUB_TOKEN 和 gh 登录。细粒度 PAT 需要为目标仓库授予：元数据读取、内容读写（如需推送）、议题读写、拉取请求读写和检查读取权限。同一 GitHub 账号的 Token 共享请求额度。
                     </div>
                   </div>
                   {!showTokenInput && (
@@ -1593,7 +1591,7 @@ export default function Settings() {
                       onClick={() => setShowTokenInput(true)}
                       className="border border-border px-2 py-1 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                     >
-                      add
+                      添加
                     </button>
                   )}
                 </div>
@@ -1607,7 +1605,7 @@ export default function Settings() {
                         <div className="min-w-0">
                           <div className="truncate font-mono text-body">{token}</div>
                           <div className="text-label text-muted-foreground">
-                            priority {index + 1}
+                            优先级 {index + 1}
                           </div>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
@@ -1617,7 +1615,7 @@ export default function Settings() {
                             disabled={index === 0 || updateConfigMutation.isPending}
                             className="border border-border px-2 py-1 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            up
+                            上移
                           </button>
                           <button
                             type="button"
@@ -1625,7 +1623,7 @@ export default function Settings() {
                             disabled={index === githubTokens.length - 1 || updateConfigMutation.isPending}
                             className="border border-border px-2 py-1 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            down
+                            下移
                           </button>
                           <button
                             type="button"
@@ -1633,14 +1631,14 @@ export default function Settings() {
                             disabled={updateConfigMutation.isPending}
                             className="border border-border px-2 py-1 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                           >
-                            remove
+                            移除
                           </button>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-label text-muted-foreground">none configured</div>
+                  <div className="text-label text-muted-foreground">尚未配置</div>
                 )}
                 {showTokenInput ? (
                   <div className="flex items-center gap-2">
@@ -1649,7 +1647,7 @@ export default function Settings() {
                       value={newGithubToken}
                       onChange={(e) => setNewGithubToken(e.target.value)}
                       placeholder="ghp_..."
-                      aria-label="GitHub token"
+                      aria-label="GitHub Token"
                       className="min-w-0 flex-1 border border-border bg-transparent px-2 py-1 text-body focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                     />
                     <button
@@ -1665,7 +1663,7 @@ export default function Settings() {
                       disabled={!newGithubToken.trim() || updateConfigMutation.isPending}
                       className="border border-border px-2 py-1 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                     >
-                      add
+                      添加
                     </button>
                     <button
                       type="button"
@@ -1675,7 +1673,7 @@ export default function Settings() {
                       }}
                       className="px-2 py-1 text-body text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                     >
-                      cancel
+                      取消
                     </button>
                   </div>
                 ) : null}
@@ -1683,7 +1681,7 @@ export default function Settings() {
                 <div className="mt-1 flex flex-col gap-2">
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-label text-muted-foreground">
-                      Run a direct GitHub auth and rate-limit check for each configured token.
+                      逐个检查已配置 Token 的 GitHub 认证和请求额度。
                     </div>
                     <div className="flex items-center gap-2">
                       {tokenTestLogs.length > 0 ? (
@@ -1693,7 +1691,7 @@ export default function Settings() {
                           data-testid="button-clear-github-token-tests"
                           className="px-2 py-1 text-body text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                         >
-                          clear
+                          清除
                         </button>
                       ) : null}
                       <button
@@ -1704,14 +1702,14 @@ export default function Settings() {
                         className="border border-border px-2 py-1 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
                       >
                         {testGitHubTokensMutation.isPending
-                          ? `testing ${githubTokens.length} key${githubTokens.length === 1 ? "" : "s"}…`
-                          : "test keys"}
+                          ? `正在测试 ${githubTokens.length} 个 Token…`
+                          : "测试 Token"}
                       </button>
                     </div>
                   </div>
                   <div className="min-h-[8rem] max-h-52 overflow-y-auto border border-border/80 bg-background/40 p-2 text-label leading-relaxed">
                     {tokenTestLogs.length === 0 ? (
-                      <div className="text-muted-foreground">No key tests run yet.</div>
+                      <div className="text-muted-foreground">尚未运行 Token 测试。</div>
                     ) : (
                       tokenTestLogs.map((log, logIndex) => (
                         <div
@@ -1719,9 +1717,9 @@ export default function Settings() {
                           className="mb-3 last:mb-0 border-b border-border/40 pb-2 last:border-b-0 last:pb-0"
                         >
                           <div className="mb-1 text-label uppercase tracking-wider text-muted-foreground">
-                            {new Date(log.timestamp).toLocaleTimeString("en-US")}
+                            {new Date(log.timestamp).toLocaleTimeString("zh-CN")}
                             {log.tokensTested > 0
-                              ? ` · ${log.tokensTested} key${log.tokensTested === 1 ? "" : "s"}`
+                              ? ` · ${log.tokensTested} 个 Token`
                               : ""}
                           </div>
                           <div className="flex flex-col gap-1.5">
@@ -1731,7 +1729,7 @@ export default function Settings() {
                                 const { data } = item;
                                 const remaining = data.remaining === null ? "?" : String(data.remaining);
                                 const resetAt = data.resetAt
-                                  ? new Date(data.resetAt).toLocaleTimeString("en-US")
+                                  ? new Date(data.resetAt).toLocaleTimeString("zh-CN")
                                   : "—";
                                 return (
                                   <div key={key} className="flex flex-col gap-0.5">
@@ -1744,8 +1742,8 @@ export default function Settings() {
                                       </span>
                                       <span className="text-foreground">{data.token}</span>
                                       <span className="text-muted-foreground">
-                                        {data.login ?? "no login"} · remaining {remaining} · reset {resetAt}
-                                        {data.repoProbe ? ` · probe ${data.repoProbe}` : ""}
+                                        {data.login ?? "未登录"} · 剩余 {remaining} · 重置时间 {resetAt}
+                                        {data.repoProbe ? ` · 仓库探测 ${data.repoProbe}` : ""}
                                       </span>
                                     </div>
                                     <div className="break-words pl-1 text-muted-foreground">
@@ -1758,7 +1756,7 @@ export default function Settings() {
                                 return (
                                   <div key={key} className="flex flex-wrap items-center gap-2 font-mono">
                                     <span className="inline-flex items-center rounded-sm border border-destructive/40 bg-destructive/10 px-1.5 py-0.5 text-label font-semibold uppercase tracking-wider text-destructive">
-                                      error
+                                      错误
                                     </span>
                                     <span className="break-words text-destructive">{item.message}</span>
                                   </div>
@@ -1778,16 +1776,16 @@ export default function Settings() {
 
               <div className="flex flex-col gap-2">
                 <label htmlFor="settings-github-comment-app-name" className="text-body">
-                  GitHub reply signature
+                  GitHub 回复签名
                 </label>
                 <div className="text-label text-muted-foreground">
-                  Replace the app name shown in public GitHub replies. Leave blank to remove it.
+                  替换公开 GitHub 回复中的应用名称，留空则不显示。
                 </div>
                 <input
                   id="settings-github-comment-app-name"
                   type="text"
                   value={githubCommentAppNameDraft}
-                  placeholder="leave blank to remove"
+                  placeholder="留空则移除"
                   onChange={(e) => setGithubCommentAppNameDraft(e.target.value)}
                   onBlur={(e) => {
                     const githubCommentAppName = e.target.value;
@@ -1807,14 +1805,14 @@ export default function Settings() {
 
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-body">Repository links in PR comments</div>
+                  <div className="text-body">PR 评论中的项目链接</div>
                   <div className="text-label text-muted-foreground">
-                    Link the reply signature back to the project repository in agent-authored GitHub PR comments and footers.
+                    在代理发布的 GitHub PR 评论及页脚中，将回复签名链接到项目仓库。
                   </div>
                 </div>
                 <input
                   type="checkbox"
-                  aria-label="Repository links in PR comments"
+                  aria-label="PR 评论中的项目链接"
                   checked={config?.includeRepositoryLinksInGitHubComments ?? true}
                   onChange={(e) =>
                     updateConfigMutation.mutate({
@@ -1828,14 +1826,14 @@ export default function Settings() {
 
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-body">GitHub progress replies</div>
+                  <div className="text-body">GitHub 进度回复</div>
                   <div className="text-label text-muted-foreground">
-                    Post public Accepted/In progress/Verifying status replies while automation works on review comments.
+                    自动处理评审意见时，公开回复“已接受／处理中／验证中”等状态。
                   </div>
                 </div>
                 <input
                   type="checkbox"
-                  aria-label="GitHub progress replies"
+                  aria-label="GitHub 进度回复"
                   checked={config?.postGitHubProgressReplies ?? false}
                   onChange={(e) =>
                     updateConfigMutation.mutate({
@@ -1848,8 +1846,8 @@ export default function Settings() {
               </div>
 
               <StringListRow
-                label="Trusted reviewers"
-                description="GitHub logins whose comments skip agent evaluation and are auto-accepted for fix."
+                label="可信评审者"
+                description="这些 GitHub 用户的评论会跳过代理评估，直接接受并修复。"
                 placeholder="octocat"
                 values={config?.trustedReviewers ?? []}
                 onChange={(next) => updateConfigMutation.mutate({ trustedReviewers: next })}
@@ -1857,8 +1855,8 @@ export default function Settings() {
               />
 
               <StringListRow
-                label="Priority issue authors"
-                description="GitHub logins whose issues are evaluated and worked before the regular issue queue."
+                label="优先议题作者"
+                description="这些 GitHub 用户提交的议题会优先于普通队列进行评估和处理。"
                 placeholder="octocat"
                 values={config?.priorityIssueAuthors ?? []}
                 onChange={(next) => updateConfigMutation.mutate({ priorityIssueAuthors: next })}
@@ -1866,8 +1864,8 @@ export default function Settings() {
               />
 
               <StringListRow
-                label="Ignored bots"
-                description="Bot logins whose comments and reviews are ignored."
+                label="忽略的机器人"
+                description="忽略这些机器人账号发布的评论和评审。"
                 placeholder="dependabot[bot]"
                 values={config?.ignoredBots ?? []}
                 onChange={(next) => updateConfigMutation.mutate({ ignoredBots: next })}
@@ -1877,8 +1875,8 @@ export default function Settings() {
                 </SettingsSubsection>
               </SettingsGroup>
 
-              <SettingsGroup id="system" title="System" description="Runtime and process-level controls.">
-                <SettingsSubsection id="system-runtime" title="Runtime">
+              <SettingsGroup id="system" title="系统" description="运行状态和进程控制。">
+                <SettingsSubsection id="system-runtime" title="运行状态">
             <div className="flex flex-col gap-4 rounded-md border border-border p-4">
               {(githubRateLimit?.limited || githubRateLimit?.recentlyLimited) ? (
                 <div
@@ -1886,8 +1884,8 @@ export default function Settings() {
                   data-testid="runtime-github-rate-limit"
                 >
                   {githubRateLimit?.limited && githubRateLimit.resetAt
-                    ? `GitHub rate limit active until ${new Date(githubRateLimit.resetAt).toLocaleTimeString("en-US")}`
-                    : "GitHub rate limit was hit recently. Sync may be delayed."}
+                    ? `GitHub 请求已限流，将于 ${new Date(githubRateLimit.resetAt).toLocaleTimeString("zh-CN")} 恢复`
+                    : "近期触发过 GitHub 限流，同步可能延迟。"}
                 </div>
               ) : null}
               <div className="grid gap-3 text-label sm:grid-cols-3" data-testid="runtime-github-budget">
@@ -1902,16 +1900,16 @@ export default function Settings() {
                     <div key={resource} className={`border-l-2 pl-2 ${tone}`}>
                       <div className="uppercase tracking-wider">{resource}</div>
                       <div className="mt-1 text-body text-foreground">
-                        {budget ? `${budget.remaining}/${budget.limit}` : "unknown"}
+                        {budget ? `${budget.remaining}/${budget.limit}` : "未知"}
                       </div>
                       <div className="mt-0.5 uppercase tracking-wider">
                         {state?.belowFloor
-                          ? "floor"
+                          ? "低于保留值"
                           : state?.belowReserve
-                            ? "reserve"
+                            ? "额度不足"
                             : budget
-                              ? `${budget.percentRemaining}% left`
-                              : "not observed"}
+                              ? `剩余 ${budget.percentRemaining}%`
+                              : "尚未获取"}
                       </div>
                     </div>
                   );
@@ -1919,9 +1917,9 @@ export default function Settings() {
               </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-body">Automation</div>
+                  <div className="text-body">自动化</div>
                   <div className="text-label text-muted-foreground">
-                    Drain mode blocks new agent runs. In-flight runs continue until they finish.
+                    排空模式会阻止新的代理任务，正在运行的任务会继续完成。
                   </div>
                   <div
                     className="mt-2 text-label"
@@ -1937,7 +1935,7 @@ export default function Settings() {
                     drainMutation.mutate(
                       runtimeState?.drainMode
                         ? { enabled: false }
-                        : { enabled: true, reason: "Manually paused via web settings" },
+                        : { enabled: true, reason: "通过网页设置手动暂停" },
                     )
                   }
                   disabled={!runtimeState || drainMutation.isPending}
@@ -1954,7 +1952,7 @@ export default function Settings() {
                   ) : null}
                   {runtimeState.drainRequestedAt ? (
                     <div className="mt-1 text-muted-foreground">
-                      since {new Date(runtimeState.drainRequestedAt).toLocaleString()}
+                      开始于 {new Date(runtimeState.drainRequestedAt).toLocaleString("zh-CN")}
                     </div>
                   ) : null}
                 </div>
@@ -1962,31 +1960,31 @@ export default function Settings() {
             </div>
                 </SettingsSubsection>
 
-                <SettingsSubsection id="system-remote" title="Remote access">
+                <SettingsSubsection id="system-remote" title="远程访问">
             <div className="rounded-md border border-border p-4">
               <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                 <div>
-                  <label htmlFor="settings-web-username" className="text-body">Username</label>
+                  <label htmlFor="settings-web-username" className="text-body">用户名</label>
                   <input
                     id="settings-web-username"
                     type="text"
                     value={webUsernameDraft}
                     onChange={(e) => setWebUsernameDraft(e.target.value)}
                     placeholder="operator"
-                    aria-label="Remote access username"
+                    aria-label="远程访问用户名"
                     data-testid="input-remote-access-username"
                     className="mt-2 w-full rounded-md border border-border bg-transparent px-2 py-1 text-body placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   />
                 </div>
                 <div>
-                  <label htmlFor="settings-web-password" className="text-body">Password</label>
+                  <label htmlFor="settings-web-password" className="text-body">密码</label>
                   <input
                     id="settings-web-password"
                     type="password"
                     value={webPasswordDraft}
                     onChange={(e) => setWebPasswordDraft(e.target.value)}
-                    placeholder="not configured"
-                    aria-label="Remote access password"
+                    placeholder="未配置"
+                    aria-label="远程访问密码"
                     data-testid="input-remote-access-password"
                     className="mt-2 w-full rounded-md border border-border bg-transparent px-2 py-1 text-body placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   />
@@ -2003,11 +2001,11 @@ export default function Settings() {
                   data-testid="button-save-remote-access"
                   className="cursor-pointer rounded-md border border-primary bg-primary px-3 py-1 text-body font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Save
+                  保存
                 </button>
               </div>
               <p className="mt-3 text-label text-muted-foreground">
-                Remote network users must sign in with these credentials. Local loopback access remains open.
+                远程访问需要使用这些凭据登录，本机回环访问无需登录。
               </p>
             </div>
                 </SettingsSubsection>
@@ -2083,7 +2081,7 @@ function StringListRow({
           disabled={!draft.trim() || disabled}
           className="border border-border px-2 py-1 text-body transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
         >
-          add
+          添加
         </button>
       </div>
       {values.length ? (
@@ -2098,7 +2096,7 @@ function StringListRow({
                 type="button"
                 onClick={() => removeValue(index)}
                 disabled={disabled}
-                aria-label={`Remove ${value}`}
+                aria-label={`移除 ${value}`}
                 className="text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
               >
                 ×
@@ -2107,7 +2105,7 @@ function StringListRow({
           ))}
         </div>
       ) : (
-        <div className="text-label text-muted-foreground">none configured</div>
+        <div className="text-label text-muted-foreground">尚未配置</div>
       )}
     </div>
   );
@@ -2144,10 +2142,10 @@ function SettingRow({
             type="button"
             onClick={() => onChange(defaultValue)}
             disabled={disabled}
-            aria-label={`Reset ${label} to default`}
+            aria-label={`将${label}恢复为默认值`}
             className="rounded-md border border-border px-2 py-1 text-label uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
           >
-            Default
+            默认
           </button>
         )}
         <input

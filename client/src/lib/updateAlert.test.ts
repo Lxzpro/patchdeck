@@ -42,8 +42,8 @@ test("shouldShowAppUpdateBanner stays hidden when no update is available", () =>
 test("getAppUpdateInstructionSteps describes the npm update flow", () => {
   assert.equal(APP_UPDATE_INSTALL_COMMAND, "npm install -g @jeremymcs/patchdeck@latest");
   assert.deepEqual(getAppUpdateInstructionSteps(), [
-    { text: "Stop the running PatchDeck process." },
-    { text: "Run", command: "npm install -g @jeremymcs/patchdeck@latest" },
-    { text: "Start PatchDeck again." },
+    { text: "停止正在运行的 PatchDeck 进程。" },
+    { text: "运行", command: "npm install -g @jeremymcs/patchdeck@latest" },
+    { text: "重新启动 PatchDeck。" },
   ]);
 });

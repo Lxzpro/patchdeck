@@ -11,11 +11,11 @@ import {
 
 // formatFeedbackStatusLabel
 test('formatFeedbackStatusLabel("in_progress") === "IN PROGRESS"', () => {
-  assert.equal(formatFeedbackStatusLabel("in_progress"), "IN PROGRESS");
+  assert.equal(formatFeedbackStatusLabel("in_progress"), "处理中");
 });
 
 test('formatFeedbackStatusLabel("resolved") === "RESOLVED"', () => {
-  assert.equal(formatFeedbackStatusLabel("resolved"), "RESOLVED");
+  assert.equal(formatFeedbackStatusLabel("resolved"), "已解决");
 });
 
 // isFeedbackCollapsedByDefault

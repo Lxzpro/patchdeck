@@ -10,9 +10,9 @@ export type AppUpdateInstructionStep = {
 
 export function getAppUpdateInstructionSteps(): AppUpdateInstructionStep[] {
   return [
-    { text: "Stop the running PatchDeck process." },
-    { text: "Run", command: APP_UPDATE_INSTALL_COMMAND },
-    { text: "Start PatchDeck again." },
+    { text: "停止正在运行的 PatchDeck 进程。" },
+    { text: "运行", command: APP_UPDATE_INSTALL_COMMAND },
+    { text: "重新启动 PatchDeck。" },
   ];
 }
 
